@@ -1,17 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, getDocs, query, where, orderBy, onSnapshot, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import { firebaseConfig } from "../core/firebase-config.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCrjARB6MTC5s_sMPHzf3a1yW1ajHTKHU4",
-    authDomain: "unionartsprc.firebaseapp.com",
-    databaseURL: "https://unionartsprc-default-rtdb.firebaseio.com",
-    projectId: "unionartsprc",
-    storageBucket: "unionartsprc.firebasestorage.app",
-    messagingSenderId: "812219989202",
-    appId: "1:812219989202:web:cb94548572e7dcb5cc810b",
-    measurementId: "G-WR8DBND5YD"
-};
+// Config imported above
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);

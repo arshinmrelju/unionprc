@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebas
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, addDoc, deleteDoc, updateDoc, onSnapshot, limit, increment, deleteField } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
 import { getDatabase, ref, set, push, onDisconnect, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import { firebaseConfig } from "../core/firebase-config.js";
 
 // Logger helper
 const debugContent = document.getElementById('debug-content');
@@ -24,17 +25,7 @@ function log(msg, data = null) {
     if (debugContent) debugContent.appendChild(div);
 }
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCrjARB6MTC5s_sMPHzf3a1yW1ajHTKHU4",
-    authDomain: "unionartsprc.firebaseapp.com",
-    databaseURL: "https://unionartsprc-default-rtdb.firebaseio.com",
-    projectId: "unionartsprc",
-    storageBucket: "unionartsprc.firebasestorage.app",
-    messagingSenderId: "812219989202",
-    appId: "1:812219989202:web:cb94548572e7dcb5cc810b",
-    measurementId: "G-WR8DBND5YD"
-};
+// Config imported above
 
 // Initialize Firebase
 log("Initializing Firebase...");

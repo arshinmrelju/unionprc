@@ -4516,17 +4516,7 @@
 
     // Global Error Handler handled below in System Control
 
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyCrjARB6MTC5s_sMPHzf3a1yW1ajHTKHU4",
-      authDomain: "unionartsprc.firebaseapp.com",
-      databaseURL: "https://unionartsprc-default-rtdb.firebaseio.com",
-      projectId: "unionartsprc",
-      storageBucket: "unionartsprc.firebasestorage.app",
-      messagingSenderId: "812219989202",
-      appId: "1:812219989202:web:cb94548572e7dcb5cc810b",
-      measurementId: "G-WR8DBND5YD"
-    };
+    import { firebaseConfig } from "./assets/core/firebase-config.js";
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -7500,21 +7490,10 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-
-    const uiFirebaseConfig = {
-      apiKey: "AIzaSyCrjARB6MTC5s_sMPHzf3a1yW1ajHTKHU4",
-      authDomain: "unionartsprc.firebaseapp.com",
-      databaseURL: "https://unionartsprc-default-rtdb.firebaseio.com",
-      projectId: "unionartsprc",
-      storageBucket: "unionartsprc.firebasestorage.app",
-      messagingSenderId: "812219989202",
-      appId: "1:812219989202:web:cb94548572e7dcb5cc810b",
-      measurementId: "G-WR8DBND5YD"
-    };
+    import { firebaseConfig } from "./assets/core/firebase-config.js";
 
     // Use a secondary app name to avoid conflicts if the main app is already initialized
-    const app2 = initializeApp(uiFirebaseConfig, "UI_Config_App");
+    const app2 = initializeApp(firebaseConfig, "UI_Config_App");
     const db2 = getFirestore(app2);
 
     async function applyArtsIdentity() {

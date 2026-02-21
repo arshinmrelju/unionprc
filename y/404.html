@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found | Pazhassiraja College Fine Arts</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00f2ea;
+      --accent: #ff0055;
+      --bg: #050510;
+      --glass: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: white;
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #gameCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      filter: blur(0px);
+      transition: filter 0.3s ease;
+    }
+
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2rem;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.5s ease;
+    }
+
+    .hud.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .score-container {
+      text-align: left;
+    }
+
+    .score-label {
+      font-size: 0.8rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 0.2rem;
+    }
+
+    .score-value {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(0, 242, 234, 0.5);
+    }
+
+    .health-bar {
+      width: 200px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .health-fill {
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    /* Screens */
+    .screen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 100;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: auto;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 3rem;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
+      max-width: 500px;
+      width: 90%;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      opacity: 0;
+      visibility: hidden;
+      scale: 0.9;
+    }
+
+    .screen.active {
+      opacity: 1;
+      visibility: visible;
+      scale: 1;
+    }
+
+    h1 {
+      font-size: 5rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.5));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 1rem 2.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Outfit', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 0 0.5rem;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background: white;
+      color: black;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      background: #00bfb8;
+      box-shadow: 0 0 30px rgba(0, 242, 234, 0.4);
+    }
+
+    .controls-hint {
+      margin-top: 2rem;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .key {
+      padding: 0.2rem 0.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 3rem;
+      }
+
+      .screen {
+        padding: 2rem;
+      }
+
+      .controls-hint {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="ui-layer">
+    <div class="hud" id="hud">
+      <div class="score-container">
+        <div class="score-label">Score</div>
+        <div class="score-value" id="scoreDisplay">0</div>
+      </div>
+      <div class="health-container">
+        <div class="score-label" style="text-align: right; color: var(--accent);">Shield</div>
+        <div class="health-bar">
+          <div class="health-fill" id="healthFill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Screen -->
+  <div class="screen active" id="startScreen">
+    <h1>404</h1>
+    <h2>Page Not Found</h2>
+    <p>You've drifted into the void. Survive the glitch storm to find your way back.</p>
+    <button class="btn btn-primary" onclick="startGame()">Init Sequence</button>
+    <a href="/" class="btn">Return Home</a>
+    <div class="controls-hint">
+      <span>Mouse to move</span>
+      <span>•</span>
+      <span>Click to boost</span>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div class="screen" id="gameOverScreen">
+    <h1 style="color: var(--accent); font-size: 3rem;">CRITICAL ERROR</h1>
+    <p>Signal lost. Final score recorded.</p>
+    <div class="score-value" id="finalScore" style="margin-bottom: 2rem; color: white;">0</div>
+    <button class="btn btn-primary" onclick="startGame()">Reboot System</button>
+    <a href="/" class="btn">Emergency Eject</a>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    let animationFrame;
+    let lastTime = 0;
+    let gameActive = false;
+    let score = 0;
+
+    // Game State
+    const mouse = { x: 0, y: 0, down: false };
+    const player = {
+      x: 0, y: 0,
+      radius: 8,
+      velocity: { x: 0, y: 0 },
+      trail: [],
+      health: 100,
+      boost: 100
+    };
+
+    let particles = [];
+    let enemies = [];
+    let scorePopups = [];
+    let difficulty = 1;
+
+    // Resize handling
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      if (!gameActive) {
+        renderBackground(); // Static background for start screen
+      }
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('touchmove', e => {
+      e.preventDefault();
+      mouse.x = e.touches[0].clientX;
+      mouse.y = e.touches[0].clientY;
+    }, { passive: false });
+
+    window.addEventListener('mousedown', () => mouse.down = true);
+    window.addEventListener('mouseup', () => mouse.down = false);
+    window.addEventListener('touchstart', () => mouse.down = true);
+    window.addEventListener('touchend', () => mouse.down = false);
+
+    class Particle {
+      constructor(x, y, color, speed, life) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.angle = Math.random() * Math.PI * 2;
+        this.velocity = Math.random() * speed;
+        this.vx = Math.cos(this.angle) * this.velocity;
+        this.vy = Math.sin(this.angle) * this.velocity;
+        this.life = life;
+        this.maxLife = life;
+        this.size = Math.random() * 3;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life--;
+        this.size *= 0.95;
+      }
+
+      draw(ctx) {
+        ctx.globalAlpha = this.life / this.maxLife;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    class Enemy {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = -50;
+        this.size = Math.random() * 20 + 10;
+        this.speed = Math.random() * 2 + 2 + difficulty;
+        this.color = '#ff0055';
+        this.text = '404';
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+      }
+
+      update() {
+        this.y += this.speed;
+        this.rotation += this.rotationSpeed;
+
+        // Wraparound for aesthetic, but we remove when off bottom
+        if (this.x < -50) this.x = width + 50;
+        if (this.x > width + 50) this.x = -50;
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+
+        // Draw Glitchy Hexagon
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = i * Math.PI / 3;
+          const r = this.size * (0.8 + Math.random() * 0.4); // Jitter
+          ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Occasional text inside
+        if (Math.random() > 0.95) {
+          ctx.fillStyle = this.color;
+          ctx.font = '12px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('404', 0, 4);
+        }
+
+        ctx.restore();
+      }
+    }
+
+    function spawnParticles(x, y, count, color) {
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle(x, y, color, 5, 20 + Math.random() * 20));
+      }
+    }
+
+    function startGame() {
+      document.getElementById('startScreen').classList.remove('active');
+      document.getElementById('gameOverScreen').classList.remove('active');
+      document.getElementById('hud').classList.add('visible');
+      document.getElementById('gameCanvas').style.filter = 'blur(0px)';
+
+      // Reset Game
+      player.x = width / 2;
+      player.y = height / 2;
+      player.health = 100;
+      score = 0;
+      difficulty = 1;
+      enemies = [];
+      particles = [];
+      gameActive = true;
+      lastTime = performance.now();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function gameOver() {
+      gameActive = false;
+      document.getElementById('hud').classList.remove('visible');
+      document.getElementById('gameOverScreen').classList.add('active');
+      document.getElementById('finalScore').innerText = Math.floor(score);
+      document.getElementById('gameCanvas').style.filter = 'blur(5px)';
+    }
+
+    function renderBackground() {
+      ctx.fillStyle = '#050510';
+      ctx.fillRect(0, 0, width, height);
+
+      // Grid
+      ctx.strokeStyle = 'rgba(0, 242, 234, 0.05)';
+      ctx.lineWidth = 1;
+      const gridSize = 50;
+
+      // Perspective grid effect logic would go here, keeping it flat but moving for now
+      const time = performance.now() * 0.001;
+      const offset = (time * 50) % gridSize;
+
+      for (let x = 0; x < width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      for (let y = offset; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+    }
+
+    function gameLoop(now) {
+      if (!gameActive) return;
+
+      const delta = (now - lastTime) / 1000;
+      lastTime = now;
+
+      // Difficulty Ramp
+      difficulty += delta * 0.05;
+      score += delta * 10;
+      document.getElementById('scoreDisplay').innerText = Math.floor(score);
+
+      ctx.clearRect(0, 0, width, height);
+
+      renderBackground();
+
+      // Player Logic
+      // Smooth follow mouse
+      const dx = mouse.x - player.x;
+      const dy = mouse.y - player.y;
+      player.x += dx * 10 * delta;
+      player.y += dy * 10 * delta;
+
+      // Player Trail
+      player.trail.push({ x: player.x, y: player.y, age: 0 });
+
+      // Draw Trail
+      ctx.beginPath();
+      ctx.strokeStyle = 'cyan';
+      ctx.lineWidth = 2;
+      if (player.trail.length > 0) {
+        ctx.moveTo(player.trail[0].x, player.trail[0].y);
+        for (let i = 0; i < player.trail.length; i++) {
+          const p = player.trail[i];
+          p.age += delta * 5; // Fade speed
+          ctx.lineTo(p.x, p.y);
+        }
+      }
+      ctx.stroke();
+
+      // Clean trail
+      player.trail = player.trail.filter(p => p.age < 1);
+
+      // Draw Player
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = 'cyan';
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Spawn Enemies
+      if (Math.random() < 0.05 * difficulty) {
+        enemies.push(new Enemy());
+      }
+
+      // Update & Draw Enemies
+      enemies.forEach((enemy, index) => {
+        enemy.update();
+        enemy.draw(ctx);
+
+        // Collision
+        const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+        if (dist < player.radius + enemy.size) {
+          player.health -= 20;
+          document.getElementById('healthFill').style.width = player.health + '%';
+          spawnParticles(player.x, player.y, 10, '#ff0055');
+          enemies.splice(index, 1);
+
+          // Shake effect
+          canvas.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
+          setTimeout(() => canvas.style.transform = 'none', 50);
+
+          if (player.health <= 0) {
+            gameOver();
+          }
+        }
+
+        // Cleanup
+        if (enemy.y > height + 50) {
+          enemies.splice(index, 1);
+          score += 50; // Bonus for dodging
+        }
+      });
+
+      // Update & Draw Particles
+      particles.forEach((p, index) => {
+        p.update();
+        p.draw(ctx);
+        if (p.life <= 0) particles.splice(index, 1);
+      });
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Init
+    resize();
+    renderBackground(); // Initial draw
+
+  </script>
+</body>
+
+</html>

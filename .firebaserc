@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "unionartsprc"
+  },
+  "targets": {
+    "unionartsprc": {
+      "hosting": {
+        "main": [
+          "unionartsprc"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

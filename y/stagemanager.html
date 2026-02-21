@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage Manager | Event Schedule</title>
+
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/favicon.png">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/stagemanager/stagemanager.css">
+</head>
+
+<body>
+    <div class="bg-ambient"></div>
+
+    <div id="loading" class="loading hidden">
+        <i class="fas fa-circle-notch fa-spin"></i>
+    </div>
+
+    <!-- Login View -->
+    <div id="login-view" class="login-view-wrapper">
+        <div class="login-container">
+            <div style="margin-bottom: 2rem;">
+                <i class="fas fa-microphone-lines" style="font-size: 3rem; color: var(--accent-primary);"></i>
+            </div>
+            <h1>Stage Manager Portal</h1>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Access your stage schedule and manage events.
+            </p>
+
+            <button id="google-login-btn" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                    style="width: 20px;">
+                Sign in with Google
+            </button>
+            <div id="login-msg" style="margin-top: 1rem; min-height: 1.25rem; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="hidden">
+        <header>
+            <div class="header-title">
+                <i class="fas fa-layer-group" style="margin-right: 10px;"></i> Stage Manager
+            </div>
+            <div class="user-controls">
+                <span id="user-display" style="font-size: 0.9rem; color: var(--text-muted);"></span>
+                <button onclick="window.reAuthorizeYouTube()" class="logout-btn"
+                    style="background: rgba(99, 102, 241, 0.1); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.2);"
+                    title="Refresh YouTube Access">
+                    <i class="fab fa-youtube"></i> Auth
+                </button>
+                <button id="logout-btn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="stage-card">
+            <span class="stage-label">Assigned Stage</span>
+            <h2 id="stage-name-display" class="stage-name">Loading...</h2>
+
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; font-family: var(--font-heading);">Upcoming Programs</h3>
+            <button onclick="fetchSchedule()"
+                style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <div id="schedule-list" class="schedule-list">
+            <!-- Programs injected here -->
+        </div>
+    </div>
+
+    <!-- Participant Modal -->
+    <div id="participant-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modal-title" style="margin: 0;">Program Participants</h3>
+                    <div id="modal-subtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modal-actions" class="modal-actions hidden">
+                <button onclick="clearAllLots()" class="action-btn btn-clear">
+                    <i class="fas fa-eraser"></i> Clear All
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Participants injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Lottery Modal -->
+    <div id="lottery-modal" class="modal hidden" style="z-index: 3000;">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Pick Your Chance</h3>
+                <button onclick="closeLotteryModal()" class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="lottery-grid" class="lottery-grid">
+                <!-- Numbers injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Recording Modal -->
+    <div id="recording-modal" class="modal hidden" style="z-index: 4000;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="recording-modal-title">Record Performance</h3>
+                    <div id="recording-modal-subtitle"
+                        style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;"></div>
+                </div>
+                <button onclick="closeRecordingModal()" class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="video-container">
+                    <video id="recording-preview" autoplay muted playsinline></video>
+                    <div id="recording-indicator" class="recording-indicator hidden">
+                        <span class="dot"></span> REC
+                    </div>
+                </div>
+
+                <div id="recording-controls" class="recording-controls">
+                    <button id="switch-camera-btn" class="action-btn"
+                        style="background: rgba(255, 255, 255, 0.1); margin-right: 10px;">
+                        <i class="fas fa-sync-alt"></i> Switch Camera
+                    </button>
+                    <button id="start-record-btn" class="action-btn btn-record">
+                        <i class="fas fa-video"></i> Start Recording
+                    </button>
+                    <button id="stop-record-btn" class="action-btn btn-stop-rec hidden">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                    <button id="save-record-btn" class="action-btn btn-save hidden">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload & Save
+                    </button>
+                </div>
+
+                <div id="upload-status" class="upload-status hidden">
+                    <div class="progress-bar-bg">
+                        <div id="upload-progress" class="progress-bar-fill"></div>
+                    </div>
+                    <p id="upload-msg"
+                        style="font-size: 0.8rem; margin-top: 0.5rem; text-align: center; color: var(--text-muted);">
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Upload Status -->
+    <div id="global-upload-container"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 5000; display: flex; flex-direction: column; gap: 10px;">
+    </div>
+
+    <script type="module" src="assets/stagemanager/stagemanager.js"></script>
+</body>
+
+</html>

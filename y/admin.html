@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Access Control</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/favicon.png">
+    <link rel="stylesheet" href="assets/admin/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+
+</head>
+
+<body>
+    <div class="bg-ambient"></div>
+
+
+    <!-- Login View -->
+    <div id="login-view" class="login-view-wrapper">
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="assets/Pazhassiraja_College_Pulpally_Logo.png" alt="College Logo" style="height: 70px;">
+            </div>
+            <h1>Administrative Portal</h1>
+            <p class="subtitle">Secure gateway for authorized institution personnel and administrators only.</p>
+
+            <button id="google-login-btn" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Sign in with Google
+            </button>
+
+            <div id="status-message"></div>
+        </div>
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div id="pdf-preview-modal" class="hidden">
+        <div class="modal-content">
+            <div class="pdf-toolbar">
+                <div class="pdf-toolbar-title">PDF Preview</div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="closePDFPreview()" class="btn-tab"
+                        style="background: rgba(255,255,255,0.1); border:none; color: #fff;">
+                        Cancel
+                    </button>
+                    <button onclick="processPDFDownload()" class="btn-tab"
+                        style="background: var(--success); color: white; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                </div>
+            </div>
+            <div id="pdf-preview-container">
+                <!-- Preview Content Injected Here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="admin-dashboard" class="hidden">
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <button class="fab-refresh"
+            onclick="refreshAll(); this.querySelector('i').classList.add('fa-spin'); setTimeout(() => this.querySelector('i').classList.remove('fa-spin'), 1000);"
+            aria-label="Refresh Data">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/Pazhassiraja_College_Pulpally_Logo.png" alt="PRC">
+                <span>PRC PORTAL</span>
+            </div>
+            <div id="system-year-badge"
+                style="text-align: center; margin-top: 0.5rem; margin-bottom: 2rem; padding: 0.4rem 1rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 1rem; font-size: 0.75rem; font-weight: 700; color: #a5b4fc; letter-spacing: 0.05em;">
+                <i class="fas fa-calendar-alt" style="margin-right: 0.4rem;"></i>
+                <span id="sidebar-year-text">2025-26</span>
+            </div>
+
+            <nav class="nav-menu">
+                <a class="nav-item active" data-nav="registrations">
+                    <i class="fas fa-id-card"></i>
+                    Registrations
+                </a>
+                <a class="nav-item" data-nav="leaderboard">
+                    <i class="fas fa-trophy"></i>
+                    Leaderboard
+                </a>
+                <a class="nav-item" data-nav="whitelist">
+                    <i class="fas fa-user-shield"></i>
+                    Access Control
+                </a>
+                <a class="nav-item" data-nav="dates">
+                    <i class="fas fa-calendar-alt"></i>
+                    Schedule
+                </a>
+                <a class="nav-item" data-nav="settings">
+                    <i class="fas fa-cog"></i>
+                    Reg Control
+                </a>
+                <a class="nav-item" data-nav="review">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                    Need Review
+                    <span id="review-count-badge" class="badge-count hidden">0</span>
+                </a>
+                <a class="nav-item" data-nav="deleted">
+                    <i class="fas fa-trash-alt"></i>
+                    Recently Deleted
+                </a>
+                <a class="nav-item" data-nav="chest">
+                    <i class="fas fa-chess-board"></i>
+                    Chest Numbers
+                </a>
+                <a class="nav-item" data-nav="appeals">
+                    <i class="fas fa-gavel"></i>
+                    Appeals
+                    <span id="appeals-count-badge" class="badge-count hidden">0</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="nav-item" id="refresh-btn">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Data
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div class="header-title" style="display: flex; align-items: center;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="current-view-title">Registrations</h2>
+                </div>
+                <div class="header-actions">
+                    <a href="/" class="header-link" title="View Site">
+                        <i class="fas fa-external-link-alt"></i> <span class="header-link-text">View Site</span>
+                    </a>
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="user-email"></span>
+                    </div>
+                    <button id="logout-btn" class="logout-btn" title="Logout">
+                        <span class="btn-text">Logout</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-body">
+                <!-- Stats Grid -->
+                <div class="stats-grid" id="stats-summary">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="value" id="stat-total-reg">0</span>
+                            <span class="label">Total Registrations</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon secondary">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="value" id="stat-top-dept">N/A</span>
+                            <span class="label">Top Department</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="value">ACTIVE</span>
+                            <span class="label">System Status</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main View Panels -->
+
+                <!-- Registrations Panel -->
+                <div id="panel-registrations">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Detailed Registrations</h3>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-tab active" data-tab="On Stage">On Stage</button>
+                                <button class="btn-tab" data-tab="Off Stage">Off Stage</button>
+                                <button onclick="openPDFPreview()" class="btn-tab"
+                                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);"
+                                    title="Download as PDF">
+                                    <i class="fas fa-file-pdf"></i> Download
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filters Section -->
+                        <div class="filters" id="reg-filters">
+                            <div class="filter-group">
+                                <span class="filter-label">Search Student</span>
+                                <input type="text" id="filter-search" placeholder="Name or Roll No..."
+                                    class="input-pill">
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">Department</span>
+                                <select id="filter-dept" class="input-pill">
+                                    <option value="">All Departments</option>
+                                    <option value="Dep. of Economics">Economics</option>
+                                    <option value="Dep. of English">English</option>
+                                    <option value="Dep. of History">History</option>
+                                    <option value="Dep. of Microbiology">Microbiology</option>
+                                    <option value="Dep. of Travel and Tourism">Tourism</option>
+                                    <option value="Dep. of Biochemistry">Biochemistry</option>
+                                    <option value="Dep. of Commerce">Commerce</option>
+                                    <option value="Dep. of Journalism and Mass Communication">Journalism</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">Year</span>
+                                <select id="filter-year" class="input-pill">
+                                    <option value="">All Years</option>
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
+                            </div>
+                            <!-- New Registration Type Filter -->
+                            <div class="filter-group">
+                                <span class="filter-label">Reg Type</span>
+                                <select id="filter-type" class="input-pill">
+                                    <option value="">All Types</option>
+                                    <option value="individual">Individual</option>
+                                    <option value="group">Group</option>
+                                </select>
+                            </div>
+                            <!-- New Item Filter -->
+                            <div class="filter-group">
+                                <span class="filter-label">Item / Program</span>
+                                <select id="filter-item" class="input-pill" style="max-width: 200px;">
+                                    <option value="">All Items</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student / Group</th>
+                                        <th>Department</th>
+                                        <th>Roll No</th>
+                                        <th>Year</th>
+                                        <th>Type</th>
+                                        <th>Program / Item</th>
+                                        <th>Time</th>
+                                        <th>Schedule</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="registrations-body"></tbody>
+                            </table>
+                            <div id="no-data-msg" class="hidden"
+                                style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-inbox"
+                                    style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                                No registrations found
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Leaderboard Panel -->
+                <div id="panel-leaderboard" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Department Scores</h3>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Points tracking for Arts Fest
+                            </div>
+                            <button onclick="recalculateLeaderboard()" class="btn-tab"
+                                style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.2); font-size: 0.75rem; padding: 0.4rem 0.8rem;"
+                                title="Audit all logs and rebuild totals">
+                                <i class="fas fa-sync"></i> Recalculate Totals
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Department</th>
+                                        <th>Total Points</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboard-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Access Control Panel -->
+                <div id="panel-whitelist" class="hidden">
+
+
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <div class="card-header">
+                            <h3 class="card-title">Grant Departmental Access</h3>
+                        </div>
+                        <div style="padding: 2rem;">
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1.5rem; align-items: flex-end;">
+                                <div class="filter-group">
+                                    <span class="filter-label">User Email</span>
+                                    <input type="email" id="new-whitelist-email" placeholder="official@college.com"
+                                        class="input-pill">
+                                </div>
+                                <div class="filter-group">
+                                    <span class="filter-label">Access Level</span>
+                                    <select id="new-whitelist-role" class="input-pill">
+                                        <option value="Main">Main Access</option>
+                                        <option value="Sub">Sub Access</option>
+                                        <option value="Leaderboard">Leaderboard Only</option>
+                                        <option value="Chest">Chest Number Only</option>
+                                        <option value="Stage Manager">Stage Manager</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <span class="filter-label">Assign Department</span>
+                                    <select id="new-whitelist-dept" class="input-pill">
+                                        <option value="">Select Department</option>
+                                        <option value="Dep. of Economics">Economics</option>
+                                        <option value="Dep. of English">English</option>
+                                        <option value="Dep. of History">History</option>
+                                        <option value="Dep. of Microbiology">Microbiology</option>
+                                        <option value="Dep. of Travel and Tourism">Tourism</option>
+                                        <option value="Dep. of Journalism and Mass Communication">Journalism</option>
+                                        <option value="Dep. of Biochemistry">Biochemistry</option>
+                                        <option value="Dep. of Commerce">Commerce</option>
+                                        <option value="Main Admin">Main Admin</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group" id="new-whitelist-stage-container" style="display: none;">
+                                    <span class="filter-label">Assign Stage</span>
+                                    <select id="new-whitelist-stage" class="input-pill">
+                                        <option value="">Select Stage</option>
+                                    </select>
+                                </div>
+                                <button id="add-to-whitelist-btn" class="logout-btn"
+                                    style="background: var(--accent-primary); color: #fff; border: none; height: 38px;">
+                                    <i class="fas fa-plus"></i> Grant Access
+                                </button>
+                            </div>
+                            <!-- New Override Permissions -->
+                            <div
+                                style="display: flex; gap: 2rem; margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.8rem; border: 1px solid rgba(255,255,255,0.05);">
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
+                                    <input type="checkbox" id="new-whitelist-can-offstage"
+                                        style="width: 16px; height: 16px; accent-color: var(--accent-primary);">
+                                    Allow Off Stage Reg (Bypass Lock)
+                                </label>
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
+                                    <input type="checkbox" id="new-whitelist-can-onstage"
+                                        style="width: 16px; height: 16px; accent-color: var(--accent-primary);">
+                                    Allow On Stage Reg (Bypass Lock)
+                                </label>
+                            </div>
+                            <p id="whitelist-status" style="margin-top: 1rem; font-size: 0.8rem; min-height: 1.25rem;">
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Authorized Personnel</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Email Address</th>
+                                        <th>Role</th>
+                                        <th>Department</th>
+                                        <th>Added On</th>
+                                        <th>Reg Overrides</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="whitelist-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Panel -->
+                <div id="panel-settings" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Registration Control Panel</h3>
+                        </div>
+                        <div style="padding: 2rem; display: grid; gap: 1.5rem;">
+                            <div
+                                style="padding: 1.5rem; background: rgba(15, 23, 42, 0.3); border-radius: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600;">On Stage Registrations</div>
+                                    <div id="on-stage-status" style="font-size: 0.8rem; margin-top: 4px;">Active</div>
+                                </div>
+                                <button id="on-stage-lock-btn"
+                                    onclick="toggleRegLock('onStageLocked', !registrationSettings.onStageLocked)"
+                                    class="logout-btn"
+                                    style="border: none; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border-radius: 50%; transition: all 0.3s ease;">
+                                    <i class="fas fa-lock-open"></i>
+                                </button>
+                            </div>
+
+                            <div
+                                style="padding: 1.5rem; background: rgba(15, 23, 42, 0.3); border-radius: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600;">Off Stage Registrations</div>
+                                    <div id="off-stage-status" style="font-size: 0.8rem; margin-top: 4px;">Active</div>
+                                </div>
+                                <button id="off-stage-lock-btn"
+                                    onclick="toggleRegLock('offStageLocked', !registrationSettings.offStageLocked)"
+                                    class="logout-btn"
+                                    style="border: none; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border-radius: 50%; transition: all 0.3s ease;">
+                                    <i class="fas fa-lock-open"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Need Review Panel -->
+                <div id="panel-review" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Registration Audit:
+                                3+ individual entries, department limits, low participation, or single-department
+                                items.</p>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Details</th>
+                                        <th>Department</th>
+                                        <th>Roll Number</th>
+                                        <th>Year</th>
+                                        <th>Audit Flags</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="review-body"></tbody>
+                            </table>
+                            <div id="no-review-msg" class="hidden"
+                                style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-check-circle"
+                                    style="font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--success);"></i>
+                                No registration issues found
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Competition Dates Panel -->
+                <div id="panel-dates" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Competition Schedule</h3>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="openAddProgramModal()" class="input-pill"
+                                    style="background: var(--accent-primary); border: none; color: white; padding: 0.5rem 1rem; cursor: pointer;">
+                                    <i class="fas fa-plus"></i> Add New Program
+                                </button>
+                                <button id="btn-populate-schedule" onclick="populateDefaultSchedule()"
+                                    class="input-pill"
+                                    style="background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.3); color: #a855f7; padding: 0.5rem 1rem; cursor: pointer;">
+                                    <i class="fas fa-magic"></i> Populate Default Schedule
+                                </button>
+                                <button onclick="fetchProgramDates()" class="input-pill"
+                                    style="background: transparent; border: 1px solid var(--glass-border); padding: 0.5rem 1rem; cursor: pointer;">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-header"
+                            style="background: rgba(15, 23, 42, 0.3); border-bottom: none; padding-top: 1.5rem; padding-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <input type="text" id="date-search" placeholder="Search program..." class="input-pill"
+                                oninput="renderDatesPanel()" style="width: 100%; max-width: 400px;">
+                            <select id="date-category-filter" class="input-pill" onchange="renderDatesPanel()"
+                                style="max-width: 200px;">
+                                <option value="">All Categories</option>
+                                <option value="On Stage">On Stage</option>
+                                <option value="Off Stage">Off Stage</option>
+                            </select>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Program Name</th>
+                                        <th>Competition Date</th>
+                                        <th>Stage</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dates-body"></tbody>
+                            </table>
+                            <div id="no-dates-msg" class="hidden"
+                                style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                                No programs found
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recently Deleted Panel -->
+                <div id="panel-deleted" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recently Deleted Registrations</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Items shown here
+                                can be restored or permanently removed.</p>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student / Group</th>
+                                        <th>Department</th>
+                                        <th>Roll No</th>
+                                        <th>Type</th>
+                                        <th>Program / Item</th>
+                                        <th>Deleted At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deleted-registrations-body"></tbody>
+                            </table>
+                            <div id="no-deleted-msg" class="hidden"
+                                style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-trash"
+                                    style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                                No deleted registrations found
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chest Numbers Panel -->
+                <div id="panel-chest" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Chest Number Selection</h3>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="refreshChestPanel()" class="input-pill"
+                                    style="background: transparent; border: 1px solid var(--glass-border); padding: 0.5rem 1rem; cursor: pointer;">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                                <button onclick="openJudgeSheetPreview()" class="input-pill"
+                                    style="background: rgba(251, 191, 36, 0.1); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); padding: 0.5rem 1rem; cursor: pointer;"
+                                    title="Print Judge Sheets">
+                                    <i class="fas fa-gavel"></i> Judge Sheets
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-header"
+                            style="background: rgba(15, 23, 42, 0.3); border-bottom: none; padding: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                            <div class="filter-group" style="flex: 1; max-width: 300px;">
+                                <span class="filter-label">Select Program / Item</span>
+                                <select id="chest-item-select" class="input-pill" onchange="onChestProgramChange()">
+                                    <option value="">Choose an item...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group" style="max-width: 150px;">
+                                <span class="filter-label">Chest Series</span>
+                                <select id="chest-series-select" class="input-pill" onchange="applyChestSeries()">
+                                    <option value="0">Default (1+)</option>
+                                    <option value="100">100 Series (101+)</option>
+                                    <option value="200">200 Series (201+)</option>
+                                    <option value="300">300 Series (301+)</option>
+                                    <option value="400">400 Series (401+)</option>
+                                    <option value="500">500 Series (501+)</option>
+                                    <option value="600">600 Series (601+)</option>
+                                    <option value="700">700 Series (701+)</option>
+                                    <option value="800">800 Series (801+)</option>
+                                    <option value="900">900 Series (901+)</option>
+                                </select>
+                            </div>
+                            <div id="chest-stats"
+                                style="font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 1.5rem;">
+                                <!-- Stats like Total, Assigned, Remaining injected here -->
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student / Group</th>
+                                        <th>Department</th>
+                                        <th>Roll No</th>
+                                        <th>Chest Number</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="chest-body"></tbody>
+                            </table>
+                            <div id="no-chest-msg"
+                                style="padding: 4rem 2rem; text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-chess-knight"
+                                    style="font-size: 2.5rem; margin-bottom: 1.5rem; display: block; opacity: 0.3;"></i>
+                                Select a program to view participants and manage chest numbers
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appeals Panel -->
+                <div id="panel-appeals" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Participant Appeals</h3>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="fetchAppeals()" class="input-pill"
+                                    style="background: transparent; border: 1px solid var(--glass-border); padding: 0.5rem 1rem; cursor: pointer;">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filters Section -->
+                        <div class="filters" id="appeal-filters"
+                            style="background: rgba(15, 23, 42, 0.3); border-bottom: 1px solid var(--glass-border); padding: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <div class="filter-group" style="flex: 1; min-width: 200px;">
+                                <span class="filter-label">Search Appeals</span>
+                                <input type="text" id="filter-appeal-search"
+                                    placeholder="Name, chest, program, email..." class="input-pill"
+                                    oninput="currentAppealFilters.search = this.value; renderAppeals();">
+                            </div>
+                            <div class="filter-group" style="max-width: 180px;">
+                                <span class="filter-label">Status</span>
+                                <select id="filter-appeal-status" class="input-pill"
+                                    onchange="currentAppealFilters.status = this.value; renderAppeals();">
+                                    <option value="">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="under_review">Under Review</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="needs_info">Needs Info</option>
+                                </select>
+                            </div>
+                            <div class="filter-group" style="max-width: 180px;">
+                                <span class="filter-label">Department</span>
+                                <select id="filter-appeal-dept" class="input-pill"
+                                    onchange="currentAppealFilters.department = this.value; renderAppeals();">
+                                    <option value="">All Departments</option>
+                                    <option value="Economics">Economics</option>
+                                    <option value="English">English</option>
+                                    <option value="History">History</option>
+                                    <option value="Microbiology">Microbiology</option>
+                                    <option value="Tourism">Tourism</option>
+                                    <option value="Journalism">Journalism</option>
+                                    <option value="Biochemistry">Biochemistry</option>
+                                    <option value="Commerce">Commerce</option>
+                                </select>
+                            </div>
+                            <div class="filter-group" style="max-width: 150px;">
+                                <span class="filter-label">Priority</span>
+                                <select id="filter-appeal-priority" class="input-pill"
+                                    onchange="currentAppealFilters.priority = this.value; renderAppeals();">
+                                    <option value="">All Priorities</option>
+                                    <option value="high">🔴 High</option>
+                                    <option value="medium">🟡 Medium</option>
+                                    <option value="low">🟢 Low</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Details</th>
+                                        <th>Program / Item</th>
+                                        <th>Reason for Appeal</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="appeals-body"></tbody>
+                            </table>
+                            <div id="no-appeals-msg" class="hidden"
+                                style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-gavel"
+                                    style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                                No appeals found
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+                <!-- Debug Panel -->
+                <div id="debug-panel"
+                    style="display: none; margin-top: 2rem; padding: 1.5rem; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 1rem; font-family: monospace; font-size: 0.8rem; color: #94a3b8; max-height: 300px; overflow-y: auto;">
+                    <h3
+                        style="margin-top: 0; color: #f472b6; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                        System Logs</h3>
+                    <div id="debug-content">Initialising secure session...</div>
+                </div>
+
+            </div>
+
+            <!-- Institutional Footer -->
+            <footer class="site-footer">
+                <div class="footer-content">
+                    <div class="footer-column">
+                        <div class="footer-logo">
+                            <img src="assets/Pazhassiraja_College_Pulpally_Logo.png" alt="College Logo">
+                            <span>Admin Portal SC</span>
+                        </div>
+                        <p class="footer-desc">
+                            Secure Administrative Environment for Pazhassiraja College Pulpally. Authorized access only.
+                        </p>
+                        <div class="contact-item" style="cursor: default; margin-top: 0.5rem;">
+                            <i class="fas fa-location-dot"></i>
+                            <span>Pazhassiraja College, Pulpally<br>Wayanad, Kerala - 673579</span>
+                        </div>
+                    </div>
+
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Admin Support</h4>
+                        <div class="footer-nav-list">
+                            <a href="mailto:collageunionprc@gmail.com" class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>collageunionprc@gmail.com</span>
+                            </a>
+                            <a href="tel:+918281430208" class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+91 8281430208</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="footer-column">
+                        <h4 class="footer-heading">Tech Support</h4>
+                        <div class="footer-nav-list">
+                            <a href="mailto:ashinmrelu@gmail.com" class="contact-item">
+                                <i class="fas fa-at"></i>
+                                <span>arshinmrelju@gmail.com</span>
+                            </a>
+                            <a href="https://www.instagram.com/arshin_m_relju" target="_blank" class="contact-item">
+                                <i class="fab fa-instagram"></i>
+                                <span>@arshin_m_relju</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <div class="footer-copyright">
+                        &copy; 2026 College Union PRC. Secure Admin System.
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(12px); padding: 2rem;">
+        <div class="card"
+            style="width: 90%; max-width: 480px; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--accent-primary); overflow: hidden;">
+
+            <div style="padding: 2rem 2.5rem; overflow-y: auto; flex: 1;">
+                <h2 style="margin-top: 0; margin-bottom: 1.5rem; font-family: var(--font-heading); font-size: 1.5rem;">
+                    Edit
+                    Registration</h2>
+                <input type="hidden" id="edit-id">
+
+                <div style="display: grid; gap: 1.25rem;">
+                    <div class="filter-group">
+                        <span class="filter-label">Student Name</span>
+                        <input type="text" id="edit-name" class="input-pill" style="width: 100%;">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Category</span>
+                        <select id="edit-category" class="input-pill" style="width: 100%;">
+                            <option value="On Stage">On Stage</option>
+                            <option value="Off Stage">Off Stage</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label">Registration Type</span>
+                        <select id="edit-type" class="input-pill" style="width: 100%;"
+                            onchange="toggleEditGroupField()">
+                            <option value="Individual">Individual</option>
+                            <option value="Group">Group</option>
+                        </select>
+                    </div>
+                    <div id="edit-group-container" class="filter-group hidden">
+                        <span class="filter-label">Group Name</span>
+                        <input type="text" id="edit-group-name" class="input-pill"
+                            style="width: 100%; margin-bottom: 1rem;">
+
+                        <span class="filter-label">Group Members</span>
+                        <div
+                            style="display: flex; gap: 0.5rem; margin-bottom: 0.25rem; padding: 0 0.5rem; opacity: 0.6; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">
+                            <span style="flex: 2;">Name</span>
+                            <span style="flex: 1;">Roll No</span>
+                            <span style="flex: 1;">Year</span>
+                            <span style="width: 30px;"></span>
+                        </div>
+                        <div id="edit-members-list"
+                            style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <!-- Members populated by JS -->
+                        </div>
+                        <button type="button" onclick="addEditMemberRow()" class="input-pill"
+                            style="background: rgba(217, 70, 239, 0.05); color: var(--accent-secondary); border: 1px dashed rgba(217, 70, 239, 0.3); width: 100%; cursor: pointer; padding: 0.5rem; font-size: 0.75rem;">
+                            <i class="fas fa-plus"></i> Add Member Detail
+                        </button>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Program / Item</span>
+                        <input type="text" id="edit-program" class="input-pill" style="width: 100%;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                        <div class="filter-group" id="edit-roll-container">
+                            <span class="filter-label">Roll Number</span>
+                            <input type="text" id="edit-roll" class="input-pill" style="width: 100%;">
+                        </div>
+                        <div class="filter-group">
+                            <span class="filter-label">Year</span>
+                            <input type="text" id="edit-year" class="input-pill" style="width: 100%;"
+                                placeholder="e.g. 2nd Year">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div
+                style="padding: 1.5rem 2.5rem; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end; gap: 1rem; background: rgba(15, 23, 42, 0.4);">
+                <button onclick="closeEditModal()" class="input-pill"
+                    style="background: transparent; cursor: pointer; border: 1px solid var(--glass-border); padding: 0.75rem 2rem;">Cancel</button>
+                <button onclick="saveEdit()" class="logout-btn"
+                    style="background: var(--accent-primary); color: #fff; border: none; padding: 0.75rem 2rem;">Update</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Inspect Modal -->
+    <div id="inspect-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2100; justify-content: center; align-items: center; backdrop-filter: blur(12px); padding: 1.5rem;">
+        <div class="card"
+            style="width: 95%; max-width: 800px; max-height: 85vh; display: flex; flex-direction: column; border: 1px solid var(--accent-primary); overflow: hidden;">
+
+            <div
+                style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.4);">
+                <h3 id="inspect-modal-title" style="margin: 0; font-family: var(--font-heading); font-size: 1.25rem;">
+                    Inspect Registrations</h3>
+                <button onclick="closeInspectModal()"
+                    style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.5rem;">&times;</button>
+            </div>
+
+            <div style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                <div class="table-container">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Student / Group</th>
+                                <th>Roll / Dept</th>
+                                <th>Program</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inspect-modal-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div
+                style="padding: 1rem 2rem; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end; gap: 1rem; background: rgba(15, 23, 42, 0.4);">
+                <button id="inspect-bulk-btn" onclick="bulkToggleCancel()" class="input-pill"
+                    style="background: var(--error); color: #fff; border: none; padding: 0.6rem 1.5rem; cursor: pointer; font-weight: 600; display: none;">Cancel
+                    All</button>
+                <button onclick="closeInspectModal()" class="input-pill"
+                    style="background: transparent; color: var(--text-muted); border: 1px solid var(--glass-border); padding: 0.6rem 1.5rem; cursor: pointer; font-weight: 600;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Program Modal -->
+    <div id="modal-add-program" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2200; justify-content: center; align-items: center; backdrop-filter: blur(12px); padding: 2rem;">
+        <div class="card" style="width: 90%; max-width: 400px; padding: 2rem; border: 1px solid var(--accent-primary);">
+            <h2 style="margin-top: 0; margin-bottom: 1.5rem; font-family: var(--font-heading); font-size: 1.5rem;">Add
+                New
+                Program</h2>
+            <div style="display: grid; gap: 1.25rem;">
+                <div class="filter-group">
+                    <span class="filter-label">Program Name</span>
+                    <input type="text" id="new-program-name" class="input-pill" style="width: 100%;"
+                        placeholder="e.g. Classical Music Solo">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Category</span>
+                    <select id="new-program-category" class="input-pill" style="width: 100%;">
+                        <option value="On Stage">On Stage</option>
+                        <option value="Off Stage">Off Stage</option>
+                    </select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                    <button onclick="closeAddProgramModal()" class="input-pill"
+                        style="background: transparent; cursor: pointer; border: 1px solid var(--glass-border); padding: 0.6rem 1.5rem;">Cancel</button>
+                    <button onclick="addNewProgram()" class="logout-btn"
+                        style="background: var(--accent-primary); color: #fff; border: none; padding: 0.6rem 1.5rem;">Add
+                        Program</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Entry Modal -->
+    <div id="score-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(12px);">
+        <div class="card"
+            style="width: 90%; max-width: 520px; padding: 2.5rem; border: 1px solid var(--accent-secondary);">
+            <h2 style="margin-top: 0; margin-bottom: 0.5rem; font-family: var(--font-heading); font-size: 1.5rem;">Add
+                Achievement</h2>
+            <p id="score-dept-display"
+                style="color: var(--accent-secondary); font-weight: 600; margin-bottom: 2rem; font-size: 0.9rem;"></p>
+            <input type="hidden" id="score-dept-id">
+
+            <div style="display: grid; gap: 1.25rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div class="filter-group">
+                        <span class="filter-label">Category</span>
+                        <select id="score-category" onchange="onScoreCategoryChange()" class="input-pill"
+                            style="width: 100%;">
+                            <option value="On Stage">On Stage</option>
+                            <option value="Off Stage">Off Stage</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Points to Award</span>
+                        <input type="number" id="score-points" value="5" min="1" class="input-pill"
+                            style="width: 100%;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div class="filter-group">
+                        <span class="filter-label">Award Type</span>
+                        <select id="score-type" onchange="onScoreTypeChange()" class="input-pill" style="width: 100%;">
+                            <option value="general" id="opt-group">Department / Group</option>
+                            <option value="individual">Individual</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Position</span>
+                        <select id="score-position" class="input-pill" style="width: 100%;"
+                            onchange="calculatePoints()">
+                            <option value="None">None</option>
+                            <option value="1st">1st Place</option>
+                            <option value="2nd">2nd Place</option>
+                            <option value="3rd">3rd Place</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="participant-fields" style="display: grid; gap: 1.25rem;">
+                    <div class="filter-group">
+                        <span class="filter-label">Item / Program</span>
+                        <select id="score-item" onchange="populateScoreParticipants()" class="input-pill"
+                            style="width: 100%;">
+                            <option value="">Select Item</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span id="score-name-label" class="filter-label">Full Name / Group</span>
+                        <select id="score-participant" class="input-pill" style="width: 100%;">
+                            <option value="">Select Participant</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2.5rem; display: flex; justify-content: flex-end; gap: 1rem; align-items: center;">
+                <button onclick="closeScoreModal()" class="input-pill"
+                    style="background: transparent; cursor: pointer; border: 1px solid var(--glass-border); padding: 0.75rem 2rem; border-radius: 0.75rem;">Cancel</button>
+                <button id="submit-score-btn" onclick="submitScore()" class="logout-btn"
+                    style="background: var(--accent-secondary); color: #fff; border: none; padding: 0.75rem 2rem; border-radius: 0.75rem; font-size: 0.85rem;">Confirm
+                    Award</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div id="analysis-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(15px);">
+        <div class="card" style="width: 95%; max-width: 720px; padding: 3rem; background: var(--sidebar-bg);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+                <div>
+                    <h2 id="analysis-title"
+                        style="margin: 0; font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.25rem;">
+                        Performance Analysis</h2>
+                    <p id="analysis-dept"
+                        style="color: var(--accent-primary); font-weight: 600; font-size: 0.9rem; margin: 0;"></p>
+                </div>
+                <button onclick="closeAnalysisModal()"
+                    style="background: none; border: none; color: #fff; cursor: pointer; font-size: 1.5rem;"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+                <div
+                    style="background: rgba(15, 23, 42, 0.4); border-radius: 1rem; padding: 1.5rem; display: flex; align-items: center; justify-content: center; min-height: 280px; position: relative;">
+                    <canvas id="scoreChart"></canvas>
+                    <div id="chart-loader" class="hidden">Loading...</div>
+                    <div id="chart-no-data" class="hidden">No data</div>
+                </div>
+                <div>
+                    <h3 class="filter-label" style="margin-bottom: 1rem;">Recent Achievements</h3>
+                    <div id="score-history-list"
+                        style="max-height: 280px; overflow-y: auto; display: grid; gap: 0.75rem;"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button onclick="closeAnalysisModal()" class="logout-btn"
+                    style="background: var(--sidebar-bg); border-color: var(--glass-border); color: #fff; padding: 0.75rem 2rem;">Close
+                    Window</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Detail Modal -->
+    <div id="score-detail-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+        <div class="card"
+            style="width: 90%; max-width: 440px; padding: 2.5rem; border: 1px solid var(--accent-primary);">
+            <h2 style="margin-top: 0; margin-bottom: 2rem; font-family: var(--font-heading); font-size: 1.25rem;">
+                Achievement Details</h2>
+            <div id="score-detail-content" style="display: grid; gap: 1.5rem;"></div>
+            <div style="margin-top: 2.5rem; display: flex; justify-content: flex-end;">
+                <button onclick="closeScoreDetailModal()" class="logout-btn"
+                    style="background: var(--accent-primary); color: #fff; border: none; padding: 0.75rem 2rem;">Acknowledged</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Detailed View Modal -->
+    <div id="view-reg-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2500; justify-content: center; align-items: center; backdrop-filter: blur(15px);">
+        <div class="card"
+            style="width: 95%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--accent-primary);">
+            <div class="card-header" style="flex-shrink: 0;">
+                <h2 style="margin: 0; font-family: var(--font-heading); font-size: 1.5rem;">Registration Details</h2>
+                <button onclick="closeViewRegModal()"
+                    style="background: none; border: none; color: #fff; cursor: pointer; font-size: 1.5rem;"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div id="view-reg-content" style="padding: 2.5rem; overflow-y: auto; display: grid; gap: 1.5rem;">
+                <!-- Content injected by JS -->
+            </div>
+            <div
+                style="padding: 1.5rem 2.5rem; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end; gap: 1rem; background: rgba(15, 23, 42, 0.4);">
+                <button onclick="closeViewRegModal()" class="input-pill"
+                    style="background: transparent; cursor: pointer; border: 1px solid var(--glass-border); padding: 0.75rem 2rem;">Close</button>
+                <button id="view-reg-edit-btn" onclick="" class="logout-btn"
+                    style="background: var(--accent-primary); color: #fff; border: none; padding: 0.75rem 2rem;">Edit
+                    Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chest Draw Modal -->
+    <div id="chest-draw-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 4000; justify-content: center; align-items: center; backdrop-filter: blur(10px); padding: 1rem;">
+        <div class="card"
+            style="width: 100%; max-width: 600px; padding: 2.5rem; border: 1px solid var(--accent-primary); position: relative; overflow: hidden; background: var(--sidebar-bg);">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2
+                    style="margin: 0; font-family: var(--font-heading); background: var(--gradient-text); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                    Chest Draw</h2>
+                <p id="chest-draw-subtitle" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">
+                </p>
+            </div>
+
+            <div id="chest-cards-container" class="chest-card-grid"></div>
+
+            <div id="draw-result-container" class="hidden"
+                style="text-align: center; margin-top: 2rem; padding: 2.5rem; background: rgba(255,255,255,0.03); border-radius: 1.25rem; border: 1px solid var(--glass-border); animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <div
+                    style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 0.1em;">
+                    Revealed Number</div>
+                <div id="revealed-number"
+                    style="font-size: 5rem; font-weight: 900; color: #fff; line-height: 1; font-family: var(--font-heading);">
+                </div>
+                <button onclick="closeChestDrawModal()" class="btn-tab active"
+                    style="margin-top: 2.5rem; padding: 0.75rem 3rem; border-radius: 2rem; background: var(--accent-primary); border: none; font-weight: 600;">Close
+                    & Back</button>
+            </div>
+
+            <button onclick="closeChestDrawModal()"
+                style="position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.5rem; opacity: 0.6; transition: opacity 0.2s;"><i
+                    class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDKs -->
+    <!-- News Modal -->
+    <div id="news-modal" class="hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(12px); padding: 2rem;">
+        <div class="card"
+            style="width: 90%; max-width: 550px; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--accent-primary); overflow: hidden;">
+            <div style="padding: 2rem 2.5rem; overflow-y: auto; flex: 1;">
+                <h2 id="news-modal-title"
+                    style="margin-top: 0; margin-bottom: 1.5rem; font-family: var(--font-heading); font-size: 1.5rem;">
+                    Post News</h2>
+                <input type="hidden" id="news-id">
+                <div style="display: grid; gap: 1.25rem;">
+                    <div class="filter-group">
+                        <span class="filter-label">Title</span>
+                        <input type="text" id="news-title" class="input-pill" style="width: 100%;"
+                            placeholder="Enter headline...">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Content</span>
+                        <textarea id="news-content" class="input-pill"
+                            style="width: 100%; height: 120px; border-radius: 1rem; padding: 1rem; resize: none;"
+                            placeholder="Details of the announcement..."></textarea>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                        <div class="filter-group">
+                            <span class="filter-label">Priority</span>
+                            <select id="news-priority" class="input-pill" style="width: 100%;">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="filter-group" style="display: flex; align-items: flex-end; padding-bottom: 0.5rem;">
+                            <label
+                                style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary);">
+                                <input type="checkbox" id="news-pinned"
+                                    style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                                Pin to Top
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                style="padding: 1.5rem 2.5rem; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end; gap: 1rem; background: rgba(15, 23, 42, 0.4);">
+                <button onclick="closeNewsModal()" class="input-pill"
+                    style="background: transparent; cursor: pointer; border: 1px solid var(--glass-border); padding: 0.75rem 2rem;">Cancel</button>
+                <button id="save-news-btn" onclick="saveNews()" class="logout-btn"
+                    style="background: var(--accent-primary); color: #fff; border: none; padding: 0.75rem 2rem;">Post
+                    Announcement</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="assets/admin/admin.js"></script>
+</body>
+
+</html>

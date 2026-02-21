@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Center | Pazhassiraja College Fine Arts</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Playfair+Display:wght@700&family=Montserrat:wght@700&family=Rozha+One&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/coreadmin/coreadmin.css">
+
+
+
+</head>
+
+<body>
+    <!-- Login View -->
+    <div id="login-view" class="login-view-wrapper">
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="assets/Pazhassiraja_College_Pulpally_Logo.png" alt="College Logo" style="height: 70px;">
+            </div>
+            <h1>Command Center</h1>
+            <p class="subtitle">Secure super-administrator gateway for system configuration and real-time monitoring.
+            </p>
+
+            <button id="google-login-btn" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Sign in with Google
+            </button>
+
+            <div id="status-message"></div>
+        </div>
+    </div>
+
+    <!-- Restricted Access View -->
+    <div id="restricted-view" class="login-view-wrapper hidden">
+        <div class="login-container" style="border-top: 2px solid #ef4444;">
+            <div class="login-logo">
+                <i class="fas fa-user-shield"
+                    style="font-size: 3.5rem; color: #ef4444; margin-bottom: 2rem; display: block;"></i>
+            </div>
+            <h1 style="color: #ef4444;">Restricted Access</h1>
+            <p id="restricted-email-msg" class="subtitle">Your account is not authorized for the Command Center.</p>
+
+            <button onclick="auth.signOut()" class="btn-primary"
+                style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); box-shadow: none; width: 100%; justify-content: center;">
+                <i class="fas fa-sign-out-alt"></i> Sign Out & Try Another
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboard-wrapper" class="hidden">
+        <div class="dashboard-container">
+            <header>
+                <div class="brand">
+                    <img src="assets/Pazhassiraja_College_Pulpally_Logo.png" alt="PRC Logo">
+                    <h1>Command Center</h1>
+                </div>
+                <div class="system-status">
+                    <div class="status-pill">
+                        <i class="fas fa-circle-check"></i>
+                        <span>Network Online</span>
+                    </div>
+                    <div id="clock">00:00:00</div>
+                    <button id="logout-btn" class="btn-icon"
+                        style="margin-left: 1rem; color: #ef4444; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2);"
+                        title="Sign Out">
+                        <i class="fas fa-power-off"></i>
+                    </button>
+                </div>
+            </header>
+
+            <aside class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-users-viewfinder"></i>
+                            Active Users
+                        </h2>
+                        <span class="badge-count" id="user-count">0</span>
+                    </div>
+                    <div id="users-list">
+                        <!-- Users injected here -->
+                        <div style="text-align:center; padding: 2rem; color: var(--text-secondary); font-size: 0.9rem;">
+                            <i class="fas fa-spinner fa-spin"
+                                style="margin-bottom: 1rem; display: block; font-size: 1.5rem;"></i>
+                            Scanning for nodes...
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="value">ACTIVE</span>
+                            <span class="label">System Status</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Management Section -->
+                <div class="admin-management-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-user-shield"></i>
+                            Admin Access Control
+                        </h2>
+                    </div>
+
+                    <div class="admin-form">
+                        <input type="email" id="new-admin-email" placeholder="Admin Email (e.g. user@gmail.com)">
+                        <!-- UID input removed as we now use Email as the key -->
+                        <select id="new-admin-role">
+                            <option value="admin">Administrator</option>
+                            <option value="Main">Main Admin</option>
+                            <option value="Leaderboard">Leaderboard View</option>
+                        </select>
+                        <button class="btn-primary" onclick="addAdmin()">
+                            <i class="fas fa-plus"></i>
+                            Add Admin
+                        </button>
+                    </div>
+
+                    <div id="admins-list-container" class="admin-list">
+                        <!-- Admins will be listed here -->
+                        <div style="text-align: center; color: var(--text-secondary); padding: 1rem;">
+                            <i class="fas fa-spinner fa-spin"></i> Loading access list...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Configuration Section -->
+                <div class="admin-management-card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            System Configuration
+                        </h2>
+                    </div>
+
+
+                    <div class="config-wrapper">
+                        <div id="sys-config-content" class="blur-locked"
+                            style="background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(255, 255, 255, 0.05);">
+                            <div style="margin-bottom: 1.5rem;">
+                                <div
+                                    style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                                    Academic Year & Palette Configuration
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                                        <div style="flex: 1; min-width: 140px;">
+                                            <select id="system-year-input"
+                                                style="width: 100%; font-size: 1.1rem; font-weight: 600; font-family: var(--font-heading); padding: 0.8rem; background: rgba(0,0,0,0.2); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem; cursor: pointer;">
+                                                <option value="2024-25">2024-25</option>
+                                                <option value="2025-26" selected>2025-26</option>
+                                                <option value="2026-27">2026-27</option>
+                                                <option value="2027-28">2027-28</option>
+                                                <option value="2028-29">2028-29</option>
+                                                <option value="2029-30">2029-30</option>
+                                                <option value="2030-31">2030-31</option>
+                                            </select>
+                                        </div>
+
+                                        <button class="btn-primary" onclick="updateSystemYear()"
+                                            style="white-space: nowrap; height: 50px; padding: 0 1.5rem;">
+                                            <i class="fas fa-save"></i>
+                                            Save Config
+                                        </button>
+                                    </div>
+
+                                    <div id="year-status"
+                                        style="font-size: 0.8rem; color: var(--text-secondary); background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 0.5rem; border: 1px dashed rgba(255,255,255,0.1);">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading current year...
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Data Audit & Recovery Section -->
+                            <div
+                                style="padding: 1.5rem; background: rgba(239, 68, 68, 0.05); border-radius: 0.75rem; border: 1px solid rgba(239, 68, 68, 0.1); margin-bottom: 0px;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                    <div>
+                                        <div
+                                            style="font-size: 0.9rem; font-weight: 700; color: #ef4444; margin-bottom: 0.25rem;">
+                                            <i class="fas fa-microscope"></i> Data Audit & Recovery
+                                        </div>
+                                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+                                            Scan and restore legacy records that are missing academic year tags.
+                                        </p>
+                                    </div>
+                                    <button class="btn-primary" onclick="auditLegacyData()" id="audit-btn"
+                                        style="background: rgba(255, 255, 255, 0.1); color: white; height: 32px; font-size: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0 1rem;">
+                                        <i class="fas fa-search"></i> Scan Database
+                                    </button>
+                                </div>
+
+                                <div id="audit-results" style="display: none; margin-bottom: 1.5rem;">
+                                    <table
+                                        style="width: 100%; border-collapse: collapse; font-size: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem; overflow: hidden;">
+                                        <thead>
+                                            <tr style="background: rgba(255,255,255,0.05); text-align: left;">
+                                                <th style="padding: 0.6rem 1rem; color: var(--text-secondary);">
+                                                    Collection
+                                                </th>
+                                                <th style="padding: 0.6rem 1rem; color: var(--text-secondary);">Untagged
+                                                    (Hidden)</th>
+                                                <th style="padding: 0.6rem 1rem; color: var(--text-secondary);">Status
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="audit-table-body">
+                                            <!-- Results injected here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div id="migration-controls" style="display: none;">
+                                    <div
+                                        style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.2); margin-bottom: 1rem;">
+                                        <div
+                                            style="font-size: 0.8rem; font-weight: 600; color: #fca5a5; margin-bottom: 0.5rem;">
+                                            <i class="fas fa-exclamation-triangle"></i> Recovery Action Required
+                                        </div>
+                                        <p style="font-size: 0.75rem; color: #fecaca; margin: 0;">
+                                            Found <strong id="total-untagged-count">0</strong> hidden records. Bringing
+                                            them
+                                            back will tag them with the current academic year (<strong
+                                                class="current-year-display">2025-26</strong>).
+                                        </p>
+                                    </div>
+
+                                    <button class="btn-primary" onclick="migrateLegacyData()" id="migrate-btn"
+                                        style="background: #ef4444; color: white; height: 44px; font-size: 0.9rem; width: 100%; font-weight: 700;">
+                                        <i class="fas fa-magic"></i>
+                                        Confirm & Restore All Data
+                                    </button>
+                                </div>
+
+                                <div id="migration-status"
+                                    style="margin-top: 1rem; font-size: 0.8rem; color: var(--success); text-align: center;">
+                                </div>
+                            </div>
+
+
+
+                            <div
+                                style="padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.8rem; color: var(--text-secondary);">
+                                <i class="fas fa-info-circle"></i> This year will be used across all system reports and
+                                documents. Format: YYYY-YY (e.g., 2025-26)
+                            </div>
+                        </div>
+
+                        <!-- Lock Overlay -->
+                        <div id="config-lock-overlay" class="lock-overlay">
+                            <div class="pin-input-container">
+                                <div style="font-size: 1.5rem; color: var(--error); margin-bottom: 0.5rem;">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div style="text-align: center; margin-bottom: 0.5rem;">
+                                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">
+                                        Restricted
+                                        Area</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">System Config is
+                                        locked
+                                    </div>
+                                </div>
+
+                                <input type="password" id="config-pin-input" class="pin-input-field" maxlength="6"
+                                    placeholder="******">
+
+                                <div id="pin-error-display" class="pin-error-msg">
+                                    <i class="fas fa-circle-exclamation"></i> Incorrect PIN
+                                </div>
+
+                                <button class="btn-primary" onclick="unlockSystemConfig()" style="width: 100%;">
+                                    Unlock
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </main>
+        </div>
+
+        <!-- User Details Modal -->
+        <div id="user-details-modal" class="modal-overlay">
+            <div class="user-modal">
+                <button class="modal-close" onclick="closeUserModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="user-profile-header">
+                    <div class="user-avatar-large">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 class="user-name-large" id="modal-user-email">user@example.com</h3>
+                    <span class="user-role-badge" id="modal-user-role">Administrator</span>
+                </div>
+
+                <div class="stats-row">
+                    <div class="detail-card">
+                        <div class="detail-label">Current Status</div>
+                        <div class="detail-value" id="modal-user-status" style="color: var(--accent)">Online</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Session Duration</div>
+                        <div class="detail-value" id="modal-session-time">0m</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Recent Activity
+                    </h4>
+                    <div class="history-list" id="modal-history-list">
+                        <!-- History injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module" src="assets/coreadmin/coreadmin.js?v=4"></script>
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": [
+    {
+      "target": "main",
+      "public": "y",
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "rewrites": [
+        {
+          "source": "/admin{,/**}",
+          "destination": "/admin.html"
+        },
+        {
+          "source": "/stagemanager{,/**}",
+          "destination": "/stagemanager.html"
+        },
+        {
+          "source": "/coreadmin{,/**}",
+          "destination": "/coreadmin.html"
+        },
+        {
+          "source": "/appeal{,/**}",
+          "destination": "/appeal.html"
+        },
+        {
+          "source": "/leaderboard{,/**}",
+          "destination": "/leaderboard.html"
+        }
+      ],
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
+    }
+  ]
+}

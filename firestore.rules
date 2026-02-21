@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- HELPER FUNCTIONS ---
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      let email = request.auth.token.email.lower();
+      return isAuthenticated() && (
+        email in ["collageunionprc@gmail.com", "collegeunionprc@gmail.com", "shobinmcj@gmail.com"] ||
+        exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)) ||
+        exists(/databases/$(database)/documents/admin_users/$(email))
+      );
+    }
+
+    function isWhitelisted() {
+      let email = request.auth.token.email.lower();
+      let year = request.resource.data.academicYear;
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/whitelisted_emails/$(email + "_" + year)) ||
+        exists(/databases/$(database)/documents/whitelisted_emails/$(request.auth.token.email + "_" + year))
+      );
+    }
+
+    match /registrations/{docId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAdmin() || (isWhitelisted() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['chestNumber', 'chanceNumber', 'videoUrl', 'youtubeId', 'videoRecordedAt']));
+      allow delete: if isAdmin();
+    }
+    
+    match /whitelisted_emails/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    match /admin_users/{userId} {
+      allow get: if isAuthenticated();
+      allow list, write: if isAdmin();
+    }
+    
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /system_config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /program_dates/{docId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (isWhitelisted() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+    }
+
+    match /score_logs/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /leaderboard/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /status/{userId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /chest_series_configs/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isWhitelisted();
+    }
+
+    match /news/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /appeals/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    // --- CATCH-ALL ---
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

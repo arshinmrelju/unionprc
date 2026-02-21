@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Official Appeal Portal | Union Arts PRC</title>
+    <meta name="description"
+        content="Access the Union Arts PRC Official Appeal Submission Portal. Secure and verified academic gateway.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="/assets/appeal/appeal.css">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+</head>
+
+<body>
+    <div class="bg-ambient"></div>
+
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <main class="main-wrapper">
+        <header>
+            <a href="/" class="logo-container">
+                <img src="/assets/Pazhassiraja_College_Pulpally_Logo.png" alt="Pazhassiraja College Logo">
+            </a>
+            <h1>Official <span class="text-gradient">Appeal Portal</span></h1>
+            <p>Secure submission gateway for academic grievances and event-related appeals. Every submission is reviewed
+                with academic integrity.</p>
+
+            <nav class="journey-tracker">
+                <div class="step active" id="step-verify">
+                    <div class="step-icon"><i class="fas fa-id-card"></i></div>
+                    <span>Verify</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step-draft">
+                    <div class="step-icon"><i class="fas fa-edit"></i></div>
+                    <span>Draft</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" id="step-submit">
+                    <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                    <span>Finalize</span>
+                </div>
+            </nav>
+
+            <div class="trust-badge">
+                <i class="fas fa-certificate"></i>
+                <span>Verified Academic Portal</span>
+            </div>
+        </header>
+
+        <section class="card-deck">
+            <!-- Auth Section -->
+            <div id="auth-section" class="card auth-card">
+                <div class="card-glow"></div>
+                <div class="auth-content">
+                    <div class="icon-orb">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                    <h2>Secure Access Required</h2>
+                    <p>This portal is restricted to authorized students and participants. Please authenticate using your
+                        institutional Google account to continue.</p>
+                    <button id="google-login-btn" class="btn-auth">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+                        <span>Authenticate with Google</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Section -->
+            <div id="form-section" class="card form-card hidden">
+                <div class="user-meta">
+                    <div class="user-pill">
+                        <i class="fas fa-shield-check"></i>
+                        <span id="user-display">---</span>
+                    </div>
+                    <button id="logout-btn" class="btn-logout">
+                        <i class="fas fa-power-off"></i>
+                        <span>Secure Logout</span>
+                    </button>
+                </div>
+
+                <div class="card-layout">
+                    <div class="form-container">
+                        <div class="card-header">
+                            <h2>Appeal Particulars</h2>
+                            <p>Please ensure all details provided are accurate and reflect the official records.</p>
+                        </div>
+
+                        <form id="appeal-form" class="appeal-form">
+                            <div class="form-grid">
+                                <div class="input-group">
+                                    <select id="department" required>
+                                        <option value="" disabled selected></option>
+                                        <option value="Dep. of Economics">Dep. of Economics</option>
+                                        <option value="Dep. of English">Dep. of English</option>
+                                        <option value="Dep. of History">Dep. of History</option>
+                                        <option value="Dep. of Microbiology">Dep. of Microbiology</option>
+                                        <option value="Dep. of Travel and Tourism">Dep. of Travel and Tourism</option>
+                                        <option value="Dep. of Journalism and Mass Communication">Dep. of Journalism and
+                                            Mass Communication</option>
+                                        <option value="Dep. of Biochemistry">Dep. of Biochemistry</option>
+                                        <option value="Dep. of Commerce">Dep. of Commerce</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                    <label for="department">Academic Department</label>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="input-group">
+                                    <select id="program-name" required>
+                                        <option value="" disabled selected>Select Department First</option>
+                                    </select>
+                                    <label for="program-name">Program or Event Name</label>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="input-group">
+                                    <select id="student-name" required>
+                                        <option value="" disabled selected>Select Program First</option>
+                                    </select>
+                                    <label for="student-name">Official Name</label>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="input-group">
+                                    <input type="text" id="chest-number" required placeholder=" " autocomplete="off"
+                                        readonly>
+                                    <label for="chest-number">Chest Number</label>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="input-group full-width">
+                                    <input type="tel" id="contact-phone" required placeholder=" " maxlength="10">
+                                    <label for="contact-phone">Registered Contact Number</label>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="input-group full-width textarea-group">
+                                    <textarea id="appeal-reason" required placeholder=" " rows="5"
+                                        maxlength="1000"></textarea>
+                                    <label for="appeal-reason">Grounds for Appeal / Detailed Reason</label>
+                                    <div class="input-glow"></div>
+                                    <div class="char-counter"><span id="char-count">0</span> / 1000</div>
+                                </div>
+                            </div>
+
+                            <!-- Video Evidence Container -->
+                            <div id="video-evidence-container" class="video-evidence hidden" style="margin-top: 2rem;">
+                                <div class="evidence-header">
+                                    <i class="fas fa-video"></i>
+                                    <h3>Official Stage Recording</h3>
+                                </div>
+                                <div class="video-wrapper" id="video-wrapper">
+                                    <iframe id="evidence-frame" src="" title="Stage Recording" frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen></iframe>
+                                </div>
+                                <div id="no-video-message" class="no-video-message hidden">
+                                    <i class="fas fa-video-slash"></i>
+                                    <p>No data of youtube video found</p>
+                                </div>
+                                <p class="evidence-note">This recording is retrieved from the official stage manager's
+                                    log for verification.</p>
+                            </div>
+
+                            <div class="form-foot">
+                                <button type="submit" class="btn-submit">
+                                    <span class="btn-text">Submit Official Appeal</span>
+                                    <span class="btn-icon"><i class="fas fa-lock"></i></span>
+                                </button>
+                                <p class="form-assist">By submitting, you agree to the academic board's review process.
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+
+                    <aside class="quick-guide">
+                        <div class="guide-header">
+                            <i class="fas fa-lightbulb"></i>
+                            <h3>Submission Guide</h3>
+                        </div>
+                        <ul class="guide-list">
+                            <li><i class="fas fa-check"></i> Use your official name as per college records.</li>
+                            <li><i class="fas fa-check"></i> Clearly state the event or program name.</li>
+                            <li><i class="fas fa-check"></i> Provide specific reasons for your appeal.</li>
+                            <li><i class="fas fa-check"></i> Keep your reference ID for future tracking.</li>
+                        </ul>
+                        <div class="guide-footer">
+                            <p>Need assistance? Contact the <a href="mailto:admin@unionartsprc.web.app">PRC Tech
+                                    Support</a></p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Success Section -->
+            <div id="success-section" class="card success-card hidden">
+                <div class="success-animation">
+                    <div class="checkmark-circle">
+                        <div class="background"></div>
+                        <div class="checkmark draw"></div>
+                    </div>
+                </div>
+                <h2>Submission Successful</h2>
+                <p>Your appeal has been securely transmitted. A digital record has been created for review by the
+                    academic board.</p>
+
+                <div class="reference-container">
+                    <div class="reference-label">Internal Tracking ID</div>
+                    <div id="ref-id" class="reference-id">---</div>
+                    <button class="btn-copy"
+                        onclick="navigator.clipboard.writeText(document.getElementById('ref-id').textContent)"
+                        title="Copy Tracking ID">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+
+                <a href="/" class="btn-return">Return to Official Homepage</a>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2026 Pazhassiraja College Pulpally (PRC). All rights reserved.</p>
+                <p class="footer-note">Official Technology Infrastructure by PRC Tech Division</p>
+                <p class="footer-note"><i class="fas fa-shield-check"></i> 256-bit Encrypted Transmission Layer Active
+                </p>
+            </div>
+        </footer>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script type="module" src="/assets/appeal/appeal.js"></script>
+</body>
+
+</html>

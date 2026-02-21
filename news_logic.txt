@@ -1,0 +1,179 @@
+
+// --- News Management Logic ---
+
+window.fetchNews = async () => {
+    log("Fetching news items...");
+    try {
+        const q = query(
+            collection(db, "news"),
+            where("academicYear", "==", systemYear)
+        );
+        const querySnapshot = await getDocs(q);
+        allNews = [];
+        querySnapshot.forEach((doc) => {
+            allNews.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Sort: Pinned first, then date (newest first)
+        allNews.sort((a, b) => {
+            if (a.isPinned && !b.isPinned) return -1;
+            if (!a.isPinned && b.isPinned) return 1;
+            const dateA = a.date ? new Date(a.date) : new Date(0);
+            const dateB = b.date ? new Date(b.date) : new Date(0);
+            return dateB - dateA;
+        });
+
+        log(`Fetched ${allNews.length} news items.`);
+        if (currentView === 'news') renderNews();
+    } catch (error) {
+        log("Error fetching news:", error);
+    }
+};
+
+window.renderNews = () => {
+    const body = document.getElementById('news-body');
+    const noMsg = document.getElementById('no-news-msg');
+    if (!body) return;
+    body.innerHTML = '';
+
+    if (allNews.length === 0) {
+        if (noMsg) noMsg.classList.remove('hidden');
+    } else {
+        if (noMsg) noMsg.classList.add('hidden');
+    }
+
+    allNews.forEach(item => {
+        const date = item.date ? new Date(item.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A';
+        const tr = document.createElement('tr');
+        
+        const priorityColor = {
+            low: '#94a3b8',
+            medium: '#38bdf8',
+            high: '#f59e0b',
+            critical: '#ef4444'
+        }[item.priority || 'medium'];
+
+        tr.innerHTML = `
+            <td>
+                ${item.isPinned ? '<span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-primary);"><i class="fas fa-thumbtack"></i> Pinned</span>' : '<span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted);">Standard</span>'}
+            </td>
+            <td>
+                <div style="font-weight: 600; color: #fff;">${escapeHtml(item.title)}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.content)}</div>
+            </td>
+            <td>
+                <span class="badge" style="background: ${priorityColor}1a; color: ${priorityColor};">
+                    ${item.priority || 'medium'}
+                </span>
+            </td>
+            <td><span style="font-size: 0.8rem; color: var(--text-muted);">${date}</span></td>
+            <td>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button onclick="openEditNewsModal('${item.id}')" title="Edit" style="color: var(--accent-primary); background: none; border: none; cursor: pointer;"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteNews('${item.id}', '${escapeHtml(item.title ? item.title.replace(/'/g, "\\'") : "")}')" title="Delete" style="color: var(--error); background: none; border: none; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        `;
+        body.appendChild(tr);
+    });
+};
+
+window.openAddNewsModal = () => {
+    document.getElementById('news-modal-title').textContent = "Post News";
+    document.getElementById('news-id').value = "";
+    document.getElementById('news-title').value = "";
+    document.getElementById('news-content').value = "";
+    document.getElementById('news-priority').value = "medium";
+    document.getElementById('news-pinned').checked = false;
+    document.getElementById('save-news-btn').textContent = "Post Announcement";
+    
+    const modal = document.getElementById('news-modal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+};
+
+window.openEditNewsModal = (id) => {
+    const item = allNews.find(n => n.id === id);
+    if (!item) return;
+
+    document.getElementById('news-modal-title').textContent = "Edit News";
+    document.getElementById('news-id').value = id;
+    document.getElementById('news-title').value = item.title || "";
+    document.getElementById('news-content').value = item.content || "";
+    document.getElementById('news-priority').value = item.priority || "medium";
+    document.getElementById('news-pinned').checked = !!item.isPinned;
+    document.getElementById('save-news-btn').textContent = "Update Announcement";
+
+    const modal = document.getElementById('news-modal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+};
+
+window.closeNewsModal = () => {
+    const modal = document.getElementById('news-modal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+};
+
+window.saveNews = async () => {
+    const id = document.getElementById('news-id').value;
+    const title = document.getElementById('news-title').value.trim();
+    const content = document.getElementById('news-content').value.trim();
+    const priority = document.getElementById('news-priority').value;
+    const isPinned = document.getElementById('news-pinned').checked;
+
+    if (!title || !content) {
+        alert("Please enter both title and content.");
+        return;
+    }
+
+    const btn = document.getElementById('save-news-btn');
+    const originalText = btn.textContent;
+    btn.textContent = "Saving...";
+    btn.disabled = true;
+
+    try {
+        const newsData = {
+            title,
+            content,
+            priority,
+            isPinned,
+            academicYear: systemYear,
+            date: id ? allNews.find(n => n.id === id).date : new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            addedBy: auth.currentUser ? auth.currentUser.email : "Admin"
+        };
+
+        if (id) {
+            await updateDoc(doc(db, "news", id), newsData);
+            log(`News item updated: ${id}`);
+        } else {
+            await addDoc(collection(db, "news"), newsData);
+            log(`New news item posted.`);
+        }
+
+        closeNewsModal();
+        fetchNews();
+        alert(id ? "Announcement updated successfully." : "Announcement posted successfully.");
+    } catch (error) {
+        log("Error saving news:", error);
+        alert("Failed to save: " + error.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+};
+
+window.deleteNews = async (id, title) => {
+    if (!confirm(`Are you sure you want to delete: "${title}"?`)) return;
+
+    try {
+        await deleteDoc(doc(db, "news", id));
+        log(`News item deleted: ${id}`);
+        fetchNews();
+        alert("Announcement deleted.");
+    } catch (error) {
+        log("Error deleting news:", error);
+        alert("Failed to delete: " + error.message);
+    }
+};

@@ -4519,10 +4519,17 @@
     import { firebaseConfig } from "./assets/core/firebase-config.js";
 
     // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const rtdb = getDatabase(app);
+    window.app = initializeApp(firebaseConfig);
+    window.db = getFirestore(window.app);
+    window.auth = getAuth(window.app);
+    window.rtdb = getDatabase(window.app);
+
+    // For local scope convenience within this module
+    const app = window.app;
+    const db = window.db;
+    const auth = window.auth;
+    const rtdb = window.rtdb;
+
     const provider = new GoogleAuthProvider();
 
     // Global system year variable
@@ -7490,6 +7497,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
     import { firebaseConfig } from "./assets/core/firebase-config.js";
 
     // Use a secondary app name to avoid conflicts if the main app is already initialized

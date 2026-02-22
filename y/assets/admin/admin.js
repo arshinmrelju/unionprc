@@ -3661,6 +3661,7 @@ const renderAppeals = () => {
         const dateStr = appeal.submittedAt?.toMillis() ? new Date(appeal.submittedAt.toMillis()).toLocaleString() : 'Recently';
         const priority = appeal.priority || 'medium';
         const priorityIcon = priority === 'high' ? '🔴' : priority === 'low' ? '🟢' : '🟡';
+        const statusColor = getStatusColor(appeal.status);
 
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
@@ -3671,48 +3672,74 @@ const renderAppeals = () => {
 
         tr.innerHTML = `
             <td>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-size: 1.2rem;" title="Priority: ${priority}">${priorityIcon}</span>
-                    <div>
-                        <div style="font-weight: 600;">${appeal.studentName}</div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Chest: ${appeal.chestNumber} | ${appeal.department}</div>
-                        <div style="font-size: 0.75rem; color: var(--accent-primary);">${appeal.submittedBy}</div>
-                        <div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;"><i class="fas fa-phone"></i> ${appeal.phone}</div>
+                <div class="appeal-student-info">
+                    <span class="priority-indicator" title="Priority: ${priority}">${priorityIcon}</span>
+                    <div class="details">
+                        <div style="font-weight: 700; font-size: 0.95rem;">${appeal.studentName}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                            <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border: 1px solid rgba(99, 102, 241, 0.2); padding: 1px 6px; font-size: 0.65rem;">${appeal.chestNumber}</span>
+                            <span style="margin: 0 4px;">•</span>
+                            ${appeal.department}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--accent-primary); font-weight: 500; margin-top: 2px;">
+                            ${appeal.submittedBy}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--success); margin-top: 2px;">
+                            <i class="fas fa-phone-alt" style="font-size: 0.7rem;"></i> ${appeal.phone}
+                        </div>
                     </div>
                 </div>
             </td>
-            <td style="font-weight: 500;">${appeal.programName}</td>
-            <td style="max-width: 300px; white-space: normal; font-size: 0.85rem; line-height: 1.4;">
-                <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--glass-border); word-break: break-word; overflow-wrap: break-word;">
-                    ${appeal.reason.length > 150 ? appeal.reason.substring(0, 150) + '...' : appeal.reason}
+            <td style="font-weight: 500; color: var(--text-main);">${appeal.programName}</td>
+            <td>
+                <div class="appeal-reason-box" title="Click row to view full reason">
+                    <i class="fas fa-quote-left" style="font-size: 0.7rem; opacity: 0.3; margin-right: 4px;"></i>
+                    ${appeal.reason.length > 80 ? appeal.reason.substring(0, 80) + '...' : appeal.reason}
                 </div>
             </td>
             <td>
-                <span class="badge" style="background: ${getStatusColor(appeal.status)}20; color: ${getStatusColor(appeal.status)}; border: 1px solid ${getStatusColor(appeal.status)}40;">
-                    ${(appeal.status || 'pending').toUpperCase()}
+                <span class="appeal-status-badge" style="background: ${statusColor}15; color: ${statusColor}; border: 1px solid ${statusColor}30;">
+                    <i class="fas ${getStatusIcon(appeal.status)}"></i>
+                    ${(appeal.status || 'pending').replace('_', ' ')}
                 </span>
             </td>
-            <td style="font-size: 0.75rem; color: var(--text-muted);">${dateStr}</td>
+            <td style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+                ${dateStr.split(', ')[0]}<br>
+                <span style="opacity: 0.6;">${dateStr.split(', ')[1] || ''}</span>
+            </td>
             <td>
-                <select onchange="updateAppealStatus('${appeal.id}', this.value)" class="input-pill" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto; margin-bottom: 0.5rem;">
-                    <option value="pending" ${appeal.status === 'pending' ? 'selected' : ''}>Pending</option>
-                    <option value="under_review" ${appeal.status === 'under_review' ? 'selected' : ''}>Under Review</option>
-                    <option value="approved" ${appeal.status === 'approved' ? 'selected' : ''}>Approved</option>
-                    <option value="rejected" ${appeal.status === 'rejected' ? 'selected' : ''}>Rejected</option>
-                    <option value="needs_info" ${appeal.status === 'needs_info' ? 'selected' : ''}>Needs Info</option>
-                </select>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button onclick="event.stopPropagation(); setPriority('${appeal.id}', 'high')" class="btn-tab" style="padding: 0.3rem 0.6rem; background: ${priority === 'high' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.05)'}; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.7rem; flex: 1;" title="High Priority">
-                        🔴
+                <div class="appeal-action-buttons">
+                    <select onchange="updateAppealStatus('${appeal.id}', this.value)" class="input-pill" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; width: auto; flex: 1;">
+                        <option value="pending" ${appeal.status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="under_review" ${appeal.status === 'under_review' ? 'selected' : ''}>Review</option>
+                        <option value="approved" ${appeal.status === 'approved' ? 'selected' : ''}>Approve</option>
+                        <option value="rejected" ${appeal.status === 'rejected' ? 'selected' : ''}>Reject</option>
+                        <option value="needs_info" ${appeal.status === 'needs_info' ? 'selected' : ''}>Info</option>
+                    </select>
+                </div>
+                <div class="appeal-action-buttons">
+                    <button onclick="event.stopPropagation(); setPriority('${appeal.id}', 'high')" class="btn-action-icon" style="${priority === 'high' ? 'background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);' : ''}" title="Flag High Priority">
+                        <i class="fas fa-flag"></i>
                     </button>
-                    <button onclick="event.stopPropagation(); deleteAppeal('${appeal.id}')" class="btn-tab" style="padding: 0.3rem 0.6rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.7rem; flex: 1;">
-                        <i class="fas fa-trash"></i>
+                    <button onclick="event.stopPropagation(); deleteAppeal('${appeal.id}')" class="btn-action-icon danger" title="Delete Appeal">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
             </td>
         `;
         tbody.appendChild(tr);
     });
+};
+
+const getStatusIcon = (status) => {
+    switch (status) {
+        case 'pending': return 'fa-clock';
+        case 'under_review': return 'fa-magnifying-glass';
+        case 'approved': return 'fa-check-circle';
+        case 'rejected': return 'fa-times-circle';
+        case 'needs_info': return 'fa-info-circle';
+        default: return 'fa-question-circle';
+    }
 };
 
 const getStatusColor = (status) => {
@@ -3776,95 +3803,117 @@ window.viewAppealDetails = (appeal) => {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(10px);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(12px);
         z-index: 9999;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem;
-        overflow-y: auto;
+        padding: 1.5rem;
     `;
 
-    const dateStr = appeal.submittedAt?.toMillis() ? new Date(appeal.submittedAt.toMillis()).toLocaleString() : 'Recently';
     const statusHistory = appeal.statusHistory || [];
+    const statusColor = getStatusColor(appeal.status);
 
     const closeModal = () => {
         const modalEl = document.getElementById('appeal-details-modal');
-        if (modalEl) modalEl.remove();
+        if (modalEl) {
+            modalEl.style.opacity = '0';
+            setTimeout(() => modalEl.remove(), 200);
+        }
     };
 
     modal.innerHTML = `
-        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(30px); border: 1.5px solid rgba(255, 255, 255, 0.15); border-radius: 1.5rem; padding: 2.5rem; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h2 style="font-family: var(--font-outfit); font-size: 1.5rem; margin: 0; color: #fff;">Appeal Details</h2>
-                <button id="close-modal-x" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">
-                    ×
+        <div style="background: var(--bg-deep); border: 1px solid var(--glass-border); border-radius: 1.5rem; padding: 2.5rem; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); animation: zoomIn 0.3s ease-out;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                <div>
+                    <h2 style="font-family: var(--font-heading); font-size: 1.75rem; margin: 0; color: #fff; letter-spacing: -0.02em;">Appeal Case Details</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">ID: ${appeal.id}</p>
+                </div>
+                <button id="close-modal-x" class="btn-action-icon" style="width: 42px; height: 42px; font-size: 1.25rem;">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Student Name</div>
-                        <div style="font-weight: 600; color: #fff;">${appeal.studentName}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Chest Number</div>
-                        <div style="font-weight: 600; color: #fff;">${appeal.chestNumber}</div>
-                    </div>
+            <div class="appeal-student-details-grid">
+                <div class="appeal-detail-item">
+                    <div class="label">Student Name</div>
+                    <div class="value" style="font-size: 1.1rem;">${appeal.studentName}</div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Department</div>
-                        <div style="font-weight: 500; color: #fff;">${appeal.department}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Program</div>
-                        <div style="font-weight: 600; color: var(--primary-light);">${appeal.programName}</div>
-                    </div>
+                <div class="appeal-detail-item">
+                    <div class="label">Chest Number</div>
+                    <div class="value">${appeal.chestNumber}</div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Contact</div>
-                        <div style="font-weight: 500; color: var(--success);">${appeal.phone}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Email</div>
-                        <div style="font-weight: 500; color: var(--accent-primary); font-size: 0.85rem;">${appeal.submittedBy}</div>
-                    </div>
+                <div class="appeal-detail-item">
+                    <div class="label">Department</div>
+                    <div class="value">${appeal.department}</div>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Status</div>
-                    <span class="badge" style="background: ${getStatusColor(appeal.status)}20; color: ${getStatusColor(appeal.status)}; border: 1px solid ${getStatusColor(appeal.status)}40; padding: 0.5rem 1rem;">
+                <div class="appeal-detail-item">
+                    <div class="label">Competition Program</div>
+                    <div class="value" style="color: var(--accent-primary);">${appeal.programName}</div>
+                </div>
+                <div class="appeal-detail-item">
+                    <div class="label">Contact Info</div>
+                    <div class="value"><i class="fas fa-phone-alt"></i> ${appeal.phone}</div>
+                </div>
+                <div class="appeal-detail-item">
+                    <div class="label">Submitted By</div>
+                    <div class="value" style="font-size: 0.85rem; opacity: 0.8;">${appeal.submittedBy}</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Process Status</div>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <span class="appeal-status-badge" style="background: ${statusColor}15; color: ${statusColor}; border: 1px solid ${statusColor}30; padding: 0.75rem 1.5rem; font-size: 0.9rem;">
+                        <i class="fas ${getStatusIcon(appeal.status)}" style="font-size: 1.1rem;"></i>
                         ${(appeal.status || 'pending').toUpperCase()}
                     </span>
-                </div>
-                <div>
-                    <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Reason for Appeal</div>
-                    <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.5rem; color: var(--text-secondary); line-height: 1.6;">${appeal.reason}</div>
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">
+                        <i class="fas fa-flag" style="color: ${appeal.priority === 'high' ? 'var(--error)' : 'var(--warning)'}"></i>
+                        Priority: ${(appeal.priority || 'medium').toUpperCase()}
+                    </div>
                 </div>
             </div>
             
-            ${statusHistory.length > 0 ? `
-                <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem;">
-                    <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">Status History</div>
-                    ${statusHistory.map(h => `
-                        <div style="padding: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; margin-bottom: 0.5rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                                <span class="badge" style="background: ${getStatusColor(h.status)}20; color: ${getStatusColor(h.status)}; font-size: 0.7rem;">${h.status.toUpperCase()}</span>
-                                <span style="font-size: 0.7rem; color: var(--text-muted);">${new Date(h.changedAt).toLocaleString()}</span>
-                            </div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">${h.notes}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.25rem;">by ${h.changedBy}</div>
-                        </div>
-                    `).join('')}
+            <div style="margin-bottom: 2.5rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Reason & Arguments</div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 1.5rem; border-radius: 1rem; color: var(--text-main); line-height: 1.7; font-size: 0.95rem; white-space: pre-wrap; word-break: break-all; overflow-wrap: anywhere;">${appeal.reason}</div>
+            </div>
+
+            ${appeal.videoUrl ? `
+                <div style="margin-bottom: 2.5rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Video Evidence</div>
+                    <div style="aspect-ratio: 16/9; background: #000; border-radius: 1rem; overflow: hidden; border: 1px solid var(--glass-border);">
+                        <iframe width="100%" height="100%" src="${appeal.videoUrl.replace('watch?v=', 'embed/')}" frameborder="0" allowfullscreen></iframe>
+                    </div>
                 </div>
             ` : ''}
             
-            <div style="display: flex; gap: 1rem;">
-                <button id="close-modal-btn" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: var(--text-dim); border: 1px solid var(--glass-border); border-radius: 0.75rem; padding: 1rem; font-size: 1rem; font-weight: 600; cursor: pointer;">
-                    Close
+            ${statusHistory.length > 0 ? `
+                <div style="margin-bottom: 2.5rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">Activity Log</div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        ${statusHistory.map(h => {
+        const hColor = getStatusColor(h.status);
+        return `
+                                <div style="padding: 1rem; background: rgba(255,255,255,0.02); border-left: 3px solid ${hColor}; border-radius: 0.5rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 700; color: ${hColor}; font-size: 0.75rem; text-transform: uppercase;">${h.status.replace('_', ' ')}</span>
+                                        <span style="font-size: 0.7rem; color: var(--text-muted);">${new Date(h.changedAt).toLocaleString()}</span>
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${h.notes}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; font-style: italic;">Changed by: ${h.changedBy}</div>
+                                </div>
+                            `;
+    }).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div style="display: flex; gap: 1.5rem;">
+                <button id="close-modal-btn" class="btn-tab active" style="flex: 1; padding: 1.25rem; font-size: 1rem;">
+                    Close Case Record
                 </button>
             </div>
         </div>

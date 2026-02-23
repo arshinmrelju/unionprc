@@ -294,7 +294,7 @@ window.openParticipantModal = async (programName, programId) => {
         });
 
         modalSubtitle.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="pro-subtitle-row" style="display: flex; align-items: center; gap: 8px;">
                 <span>${currentParticipants.length} Participants</span>
                 <span style="color: var(--glass-border);">|</span>
                 <span style="color: var(--success); font-weight: 600;"><i class="fas fa-shield-halved" style="font-size: 0.7rem;"></i> Stage Responsibility: ${assignedStage}</span>
@@ -581,16 +581,19 @@ window.openRecordingModal = async (participantId, studentName) => {
     const subtitle = document.getElementById('recording-modal-subtitle');
     const preview = document.getElementById('recording-preview');
 
-    title.textContent = `Recording: ${studentName}`;
-    subtitle.textContent = `Program: ${currentProgramName}`;
+    title.textContent = studentName;
+    subtitle.innerHTML = `<i class="fas fa-microphone-lines" style="color: var(--accent-primary); margin-right: 5px;"></i> Recording Program: <span style="color: #fff; font-weight: 600;">${currentProgramName}</span>`;
 
     modal.classList.remove('hidden');
 
-    // Reset buttons
+    // Reset buttons for Pro UI
     document.getElementById('start-record-btn').classList.remove('hidden');
     document.getElementById('stop-record-btn').classList.add('hidden');
-    document.getElementById('save-record-btn').classList.add('hidden');
+    document.getElementById('post-record-actions').classList.add('hidden');
+    document.getElementById('save-section').classList.add('hidden');
     document.getElementById('upload-status').classList.add('hidden');
+    document.getElementById('shutter-label').textContent = 'Record';
+    document.getElementById('recording-preview').controls = false;
 
     try {
         // Default to environment (back) camera
@@ -697,15 +700,32 @@ document.getElementById('start-record-btn').onclick = () => {
     document.getElementById('recording-indicator').classList.remove('hidden');
     document.getElementById('start-record-btn').classList.add('hidden');
     document.getElementById('stop-record-btn').classList.remove('hidden');
+    document.getElementById('shutter-label').textContent = 'STOP';
+    document.getElementById('shutter-label').style.color = 'var(--error)';
 };
 
 document.getElementById('stop-record-btn').onclick = () => {
     mediaRecorder.stop();
     document.getElementById('recording-indicator').classList.add('hidden');
     document.getElementById('stop-record-btn').classList.add('hidden');
-    document.getElementById('save-record-btn').classList.remove('hidden');
+
+    // Show Post-record UI
+    document.getElementById('post-record-actions').classList.remove('hidden');
+    document.getElementById('save-section').classList.remove('hidden');
+    document.getElementById('shutter-label').textContent = 'READY';
+    document.getElementById('shutter-label').style.color = 'var(--success)';
+};
+
+document.getElementById('re-record-btn').onclick = () => {
+    // Reset to record state
+    document.getElementById('post-record-actions').classList.add('hidden');
+    document.getElementById('save-section').classList.add('hidden');
     document.getElementById('start-record-btn').classList.remove('hidden');
-    document.getElementById('start-record-btn').innerHTML = '<i class="fas fa-redo"></i> Re-record';
+    document.getElementById('shutter-label').textContent = 'Record';
+    document.getElementById('shutter-label').style.color = '#fff';
+
+    // Resume camera
+    window.startCameraStream();
 };
 
 document.getElementById('save-record-btn').onclick = async () => {
@@ -1040,8 +1060,8 @@ function updateGlobalUploadUI() {
                     <span>${isFinalizing ? '<i class="fas fa-spinner fa-spin"></i> Finalizing' : 'To YouTube'}: <b>${info.name}</b></span>
                     <span>${progress}%</span>
                 </div>
-                <div class="progress-bar-bg" style="height: 4px;">
-                    <div class="progress-bar-fill" style="width: ${progress}%"></div>
+                <div class="pro-progress-container" style="height: 4px; margin-top: 4px;">
+                    <div class="pro-progress-fill" style="width: ${progress}%"></div>
                 </div>`;
         }
 

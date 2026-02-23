@@ -117,46 +117,63 @@
 
     <!-- Video Recording Modal -->
     <div id="recording-modal" class="modal hidden" style="z-index: 4000;">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <div>
-                    <h3 id="recording-modal-title">Record Performance</h3>
-                    <div id="recording-modal-subtitle"
-                        style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;"></div>
+        <div class="modal-content pro-modal">
+            <div class="pro-modal-header">
+                <div class="pro-header-info">
+                    <h2 id="recording-modal-title">Name Loading...</h2>
+                    <div id="recording-modal-subtitle" class="pro-subtitle"></div>
                 </div>
-                <button onclick="closeRecordingModal()" class="close-btn"><i class="fas fa-times"></i></button>
+                <button onclick="closeRecordingModal()" class="pro-close-btn" aria-label="Close">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
-            <div class="modal-body">
-                <div class="video-container">
+
+            <div class="pro-modal-body">
+                <div class="pro-video-viewport">
                     <video id="recording-preview" autoplay muted playsinline></video>
-                    <div id="recording-indicator" class="recording-indicator hidden">
-                        <span class="dot"></span> REC
+                    <div id="recording-indicator" class="pro-indicator hidden">
+                        <span class="indicator-dot"></span> LIVE REC
                     </div>
                 </div>
 
-                <div id="recording-controls" class="recording-controls">
-                    <button id="switch-camera-btn" class="action-btn"
-                        style="background: rgba(255, 255, 255, 0.1); margin-right: 10px;">
-                        <i class="fas fa-sync-alt"></i> Switch Camera
-                    </button>
-                    <button id="start-record-btn" class="action-btn btn-record">
-                        <i class="fas fa-video"></i> Start Recording
-                    </button>
-                    <button id="stop-record-btn" class="action-btn btn-stop-rec hidden">
-                        <i class="fas fa-stop"></i> Stop
-                    </button>
-                    <button id="save-record-btn" class="action-btn btn-save hidden">
-                        <i class="fas fa-cloud-upload-alt"></i> Upload & Save
-                    </button>
-                </div>
+                <div class="pro-controls-section">
+                    <div id="recording-controls" class="pro-controls-bar">
+                        <!-- Switch Camera (Secondary) -->
+                        <button id="switch-camera-btn" class="pro-btn-secondary" title="Switch Camera">
+                            <i class="fas fa-camera-rotate"></i>
+                        </button>
 
-                <div id="upload-status" class="upload-status hidden">
-                    <div class="progress-bar-bg">
-                        <div id="upload-progress" class="progress-bar-fill"></div>
+                        <!-- Main Shutter Button (Primary) -->
+                        <div class="shutter-wrapper">
+                            <button id="start-record-btn" class="pro-shutter pro-btn-record">
+                                <div class="shutter-inner"></div>
+                            </button>
+                            <button id="stop-record-btn" class="pro-shutter pro-btn-stop-rec hidden">
+                                <div class="shutter-inner"></div>
+                            </button>
+                            <span class="shutter-label" id="shutter-label">Record</span>
+                        </div>
+
+                        <!-- Re-take/Actions (Secondary) -->
+                        <div id="post-record-actions" class="pro-actions-group hidden">
+                            <button id="re-record-btn" class="pro-btn-secondary" title="Re-take">
+                                <i class="fas fa-rotate-left"></i>
+                            </button>
+                        </div>
                     </div>
-                    <p id="upload-msg"
-                        style="font-size: 0.8rem; margin-top: 0.5rem; text-align: center; color: var(--text-muted);">
-                    </p>
+
+                    <div id="save-section" class="pro-save-section hidden">
+                        <button id="save-record-btn" class="pro-btn-save">
+                            <i class="fas fa-cloud-arrow-up"></i> Upload Performance
+                        </button>
+                    </div>
+
+                    <div id="upload-status" class="pro-upload-status hidden">
+                        <div class="pro-progress-container">
+                            <div id="upload-progress" class="pro-progress-fill"></div>
+                        </div>
+                        <p id="upload-msg" class="pro-upload-msg"></p>
+                    </div>
                 </div>
             </div>
         </div>

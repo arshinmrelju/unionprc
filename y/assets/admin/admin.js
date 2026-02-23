@@ -2686,9 +2686,27 @@ onAuthStateChanged(auth, async (user) => {
             const whitelistData = await checkWhitelistStatus(user.email);
 
             if (whitelistData) {
-                currentUserDept = whitelistData.department;
-                currentUserAllowedCourses = whitelistData.allowedCourses || [];
-                showDashboard(user, whitelistData.role || 'Main');
+                const role = whitelistData.role || 'Main';
+                // Only allow specific roles to access the admin dashboard
+                // Stage Manager is excluded as they have their own portal
+                const allowedAdminRoles = ['Admin', 'Sub', 'Leaderboard', 'Chest'];
+
+                if (allowedAdminRoles.includes(role)) {
+                    currentUserDept = whitelistData.department;
+                    currentUserAllowedCourses = whitelistData.allowedCourses || [];
+                    showDashboard(user, role);
+                } else {
+                    log("Unauthorized role access attempt:", role);
+                    statusMsg.innerHTML = `<span class="error">Access Denied. Your role (${role}) is NOT authorized for the Admin Portal. Contact tech support if you think this is an error.</span>`;
+                    push(ref(rtdb, 'status_history/' + user.uid), {
+                        state: 'offline',
+                        timestamp: serverTimestamp(),
+                        email: user.email,
+                        note: `Unauthorized role: ${role}`
+                    });
+                    // Short delay before signing out to show the message
+                    setTimeout(() => signOut(auth), 3000);
+                }
             } else {
                 log("Unauthorized access attempt:", user.email);
                 statusMsg.innerHTML = `<span class="error">Access Denied. ${user.email} is not authorized.</span>`;
@@ -2696,7 +2714,7 @@ onAuthStateChanged(auth, async (user) => {
                     state: 'offline',
                     timestamp: serverTimestamp(),
                     email: user.email,
-                    note: 'Unauthorized access'
+                    note: 'Unauthorized access (Not in whitelist)'
                 });
                 signOut(auth);
             }

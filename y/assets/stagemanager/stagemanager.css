@@ -779,10 +779,16 @@ header {
 .pro-modal {
     background: #000 !important;
     max-width: 500px !important;
+    width: 100% !important;
     height: 100% !important;
-    max-height: 100vh !important;
+    height: 100dvh !important;
+    /* Use dynamic viewport height */
+    max-height: 100dvh !important;
     border-radius: 0 !important;
     border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
 }
 
 @media (min-width: 768px) {
@@ -836,17 +842,22 @@ header {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    /* Enable vertical scroll for whole body */
+    -webkit-overflow-scrolling: touch;
 }
 
 .pro-video-viewport {
     position: relative;
     width: 100%;
-    flex: 1;
+    min-height: 40vh;
+    /* Ensure video takes significant space but allows controls */
     background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .pro-video-viewport video {
@@ -893,8 +904,10 @@ header {
 }
 
 .pro-controls-section {
-    padding: 2rem 1.5rem 3rem;
+    padding: 1.5rem 1rem 2.5rem;
+    /* Tightened padding */
     background: #000;
+    flex-shrink: 0;
 }
 
 .pro-controls-bar {
